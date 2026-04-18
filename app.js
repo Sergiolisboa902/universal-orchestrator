@@ -1,4 +1,4 @@
-// Configuração Interna Segura (v12.1.4)
+// Configuração Interna Segura (v12.1.5)
 const CONFIG = {
     SUPABASE_URL: "https://rppctxuvncoqfgjbfczo.supabase.co",
     SUPABASE_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwcGN0eHV2bmNvcWZnamJmY3pvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4NjU3ODQsImV4cCI6MjA5MTQ0MTc4NH0.OAzfJCLB7x3VpmRYBis4bvbseCDrfcVtZ6ZuBAjqIr4"
@@ -33,13 +33,7 @@ async function init() {
         backToProjects();
     } catch (e) {
         console.error("❌ Erro na inicialização:", e);
-        document.getElementById('loading-overlay').innerHTML = `
-            <div style="text-align:center; padding: 20px;">
-                <h2 style="color:var(--red)">Erro Crítico</h2>
-                <p style="margin:10px 0">${e.message}</p>
-                <button class="btn btn-primary" onclick="location.reload()">Tentar Novamente</button>
-            </div>
-        `;
+        document.getElementById('loading-overlay').innerHTML = `<div style="text-align:center; padding: 20px;"><h2 style="color:var(--red)">Erro Crítico</h2><p>${e.message}</p></div>`;
     }
 }
 
@@ -154,10 +148,12 @@ async function createTask() {
 }
 
 async function loadRoadmap() {
-    const { data: tasks } = await _supabase.from('tasks').select('*, subtasks(*)').eq('project_id', currentProject.id).order('created_at', { ascending: true });
+    const { data: tasks, error } = await _supabase.from('tasks').select('*, subtasks(*)').eq('project_id', currentProject.id).order('created_at', { ascending: true });
+    if (error) return;
     allTasks = tasks || [];
     const lists = { todo: document.getElementById('list-todo'), doing: document.getElementById('list-doing'), done: document.getElementById('list-done') };
     Object.values(lists).forEach(l => l.innerHTML = '');
+    
     allTasks.forEach(t => {
         const card = document.createElement('div');
         card.className = 'task-card';
@@ -165,6 +161,10 @@ async function loadRoadmap() {
         card.ondragstart = (e) => handleDragStart(e, t.id);
         card.onclick = (e) => { if (e.target.tagName !== 'BUTTON') openTaskDetails(t); };
         
+        const subtasks = t.subtasks || [];
+        const completed = subtasks.filter(i => i.done).length;
+        const total = subtasks.length;
+        const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
         const timeSpent = t.time_spent || 0;
         const isThisActive = activeTaskId === t.id;
 
@@ -172,6 +172,7 @@ async function loadRoadmap() {
             <span class="category-tag tag-${t.category || 'default'}">${t.category || 'Geral'}</span>
             <span class="task-title">${t.title}</span>
             <div class="task-timer-mini ${isThisActive ? 'timer-active' : ''}">⏱️ ${formatTime(isThisActive ? activeTaskSeconds : timeSpent)}</div>
+            ${total > 0 ? `<div class="progress-container"><div class="progress-bar" style="width: ${percent}%"></div></div>` : ''}
         `;
         lists[t.status].appendChild(card);
     });
@@ -183,8 +184,7 @@ async function toggleTimerFromModal() {
     if (activeTaskId === currentTask.id) {
         clearInterval(activeTimerInterval);
         await _supabase.from('tasks').update({ time_spent: activeTaskSeconds }).eq('id', activeTaskId);
-        activeTaskId = null;
-        activeTimerInterval = null;
+        activeTaskId = null; activeTimerInterval = null;
         document.getElementById('det-timer-btn').innerText = '▶️';
     } else {
         if (activeTaskId) {
@@ -243,10 +243,25 @@ async function toggleSubtask(id, currentStatus) {
     loadRoadmap();
 }
 
+async function deleteCurrentTask() {
+    if (!confirm('Excluir?')) return;
+    await _supabase.from('tasks').delete().eq('id', currentTask.id);
+    closeModal('task-details');
+    loadRoadmap();
+}
+
 function updateAIContext() {
     if (!currentProject) return;
+    const doing = allTasks.filter(t => t.status === 'doing');
     const val = (id) => document.getElementById(id)?.value || '';
-    const contextText = `# PROJETO: ${currentProject.name}\n## STATUS: ${allTasks.filter(t=>t.status==='done').length}/${allTasks.length} tarefas concluídas.`;
+
+    const contextText = `
+# CONTEXTO ESTRATÉGICO: ${currentProject.name}
+- PROBLEMA: ${val('f-desc')} | MISSÃO: ${val('f-goal')}
+- STACK: ${val('t-front')} + ${val('t-back')}
+- PROGRESSO: ${allTasks.filter(t=>t.status==='done').length}/${allTasks.length} tarefas.
+- EM FOCO: ${doing.map(t => `[${t.title}]`).join(', ')}
+`.trim();
     const codeEl = document.getElementById('sync-code');
     if (codeEl) codeEl.innerText = contextText;
 }
@@ -256,8 +271,33 @@ function renderMetrics() {
     const done = allTasks.filter(t => t.status === 'done').length;
     const total = allTasks.length;
     const percent = total > 0 ? Math.round((done / total) * 100) : 0;
+    
     document.getElementById('metric-total-progress').innerText = percent + '%';
     document.getElementById('bar-total-progress').style.width = percent + '%';
+    document.getElementById('metric-active-tasks').innerText = allTasks.filter(t => t.status === 'doing').length;
+
+    const categories = ['blueprint', 'business', 'design', 'front', 'back', 'infra', 'ia'];
+    const container = document.getElementById('metrics-categories');
+    container.innerHTML = '';
+
+    categories.forEach(cat => {
+        const catTasks = allTasks.filter(t => t.category === cat);
+        const catDone = catTasks.filter(t => t.status === 'done').length;
+        const catTime = catTasks.reduce((acc, t) => acc + (t.time_spent || 0), 0);
+        const catPercent = catTasks.length > 0 ? Math.round((catDone / catTasks.length) * 100) : 0;
+        
+        const div = document.createElement('div');
+        div.className = 'category-metric';
+        div.innerHTML = `
+            <div style="display:flex; justify-content:space-between; margin-bottom:5px">
+                <span style="text-transform:capitalize; font-weight:600">${cat}</span>
+                <span>${catPercent}%</span>
+            </div>
+            <div class="metric-chart-bar mini" style="margin-bottom:8px"><div style="width: ${catPercent}%"></div></div>
+            <div style="font-size:9px; color:var(--text2); font-family:var(--mono)">⏱️ Total: ${formatTime(catTime)}</div>
+        `;
+        container.appendChild(div);
+    });
 }
 
 function switchMainTab(id) {
@@ -277,19 +317,65 @@ function switchBP(n) {
 }
 
 function fillBlueprintFields(p) {
-    const fields = { 'f-nome': p.name, 'f-desc': p.description, 'f-git': p.github_url, 'f-vercel': p.vercel_url };
-    for (let id in fields) { const el = document.getElementById(id); if (el) el.value = fields[id] || ''; }
+    const f = {
+        'f-nome': p.name, 'f-desc': p.description, 'f-goal': p.goal, 'f-instructions': p.ai_instructions,
+        'f-bmc-partners': p.bmc_partners, 'f-bmc-activities': p.bmc_activities, 'f-bmc-resources': p.bmc_resources,
+        'f-value': p.value_proposition, 'f-bmc-relationships': p.bmc_relationships, 'f-bmc-channels': p.bmc_channels,
+        'f-bmc-segments': p.bmc_segments, 'f-bmc-costs': p.bmc_costs, 'f-revenue': p.revenue_sources, 'f-metrics': p.metrics_north,
+        'f-branding': p.branding_colors, 'f-screen-map': p.screen_map, 'f-journey': p.user_journey,
+        't-front': p.frontend_stack, 't-back': p.tech_backend, 't-style': p.style_stack, 't-auth': p.tech_auth, 't-apis': p.tech_apis,
+        'f-schema': p.db_schema, 'f-db-policies': p.db_policies,
+        'f-git': p.github_url, 'f-supabase': p.supabase_config, 'f-vercel': p.vercel_url,
+        'f-mvp': p.mvp_scope, 'f-roadmap-v2': p.roadmap_v2
+    };
+    for (let id in f) { const el = document.getElementById(id); if (el) el.value = f[id] || ''; }
 }
 
 function triggerAutoSave() {
+    const s = document.getElementById('sync-status');
+    if (s) { s.innerText = "⏳ Alterando..."; s.style.color = "var(--amber)"; }
     clearTimeout(saveTimeout);
     saveTimeout = setTimeout(saveBlueprint, 1500);
 }
 
 async function saveBlueprint() {
     if (!currentProject) return;
-    const data = { name: document.getElementById('f-nome').value, description: document.getElementById('f-desc').value };
-    await _supabase.from('projects').update(data).eq('id', currentProject.id);
+    const s = document.getElementById('sync-status');
+    const data = {
+        name: document.getElementById('f-nome').value,
+        description: document.getElementById('f-desc').value,
+        goal: document.getElementById('f-goal').value,
+        ai_instructions: document.getElementById('f-instructions').value,
+        bmc_partners: document.getElementById('f-bmc-partners').value,
+        bmc_activities: document.getElementById('f-bmc-activities').value,
+        bmc_resources: document.getElementById('f-bmc-resources').value,
+        value_proposition: document.getElementById('f-value').value,
+        bmc_relationships: document.getElementById('f-bmc-relationships').value,
+        bmc_channels: document.getElementById('f-bmc-channels').value,
+        bmc_segments: document.getElementById('f-bmc-segments').value,
+        bmc_costs: document.getElementById('f-bmc-costs').value,
+        revenue_sources: document.getElementById('f-revenue').value,
+        metrics_north: document.getElementById('f-metrics').value,
+        branding_colors: document.getElementById('f-branding').value,
+        screen_map: document.getElementById('f-screen-map').value,
+        user_journey: document.getElementById('f-journey').value,
+        frontend_stack: document.getElementById('t-front').value,
+        tech_backend: document.getElementById('t-back').value,
+        style_stack: document.getElementById('t-style').value,
+        tech_auth: document.getElementById('t-auth').value,
+        tech_apis: document.getElementById('t-apis').value,
+        db_schema: document.getElementById('f-schema').value,
+        db_policies: document.getElementById('f-db-policies').value,
+        github_url: document.getElementById('f-git').value,
+        supabase_config: document.getElementById('f-supabase').value,
+        vercel_url: document.getElementById('f-vercel').value,
+        mvp_scope: document.getElementById('f-mvp').value,
+        roadmap_v2: document.getElementById('f-roadmap-v2').value
+    };
+    try {
+        await _supabase.from('projects').update(data).eq('id', currentProject.id);
+        if (s) { s.innerText = "✅ Sincronizado"; s.style.color = "var(--green)"; }
+    } catch (e) { if (s) s.innerText = "❌ Erro"; }
 }
 
 function openModal(type, targetStatus = 'todo') { 
@@ -304,5 +390,7 @@ async function handleDrop(e, targetStatus) {
     await _supabase.from('tasks').update({ status: targetStatus }).eq('id', taskId);
     loadRoadmap();
 }
+
+function copySync() { navigator.clipboard.writeText(document.getElementById('sync-code').innerText); alert('Copiado!'); }
 
 document.addEventListener('DOMContentLoaded', init);
