@@ -1,4 +1,4 @@
-// Configuração Interna Segura (v12.1.7)
+// Configuração Interna Segura (v12.1.8)
 const CONFIG = {
     SUPABASE_URL: "https://rppctxuvncoqfgjbfczo.supabase.co",
     SUPABASE_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwcGN0eHV2bmNvcWZnamJmY3pvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4NjU3ODQsImV4cCI6MjA5MTQ0MTc4NH0.OAzfJCLB7x3VpmRYBis4bvbseCDrfcVtZ6ZuBAjqIr4"
@@ -18,6 +18,7 @@ let activeTaskId = null;
 let activeTaskSeconds = 0;
 
 function formatTime(seconds) {
+    if (!seconds && seconds !== 0) return "00:00:00";
     const h = Math.floor(seconds / 3600);
     const m = Math.floor((seconds % 3600) / 60);
     const s = seconds % 60;
@@ -217,7 +218,7 @@ async function closeModal(type) {
         activeTaskId = null;
         activeTimerInterval = null;
         await _supabase.from('tasks').update({ time_spent: finalTime }).eq('id', taskId);
-        loadRoadmap();
+        await loadRoadmap();
     }
     document.getElementById(`modal-${type}`).style.display = 'none'; 
 }
@@ -244,13 +245,13 @@ async function addSubtask() {
     await _supabase.from('subtasks').insert([{ task_id: currentTask.id, text: input.value, done: false }]);
     input.value = '';
     openTaskDetails(currentTask);
-    loadRoadmap();
 }
 
 async function toggleSubtask(id, currentStatus) {
     await _supabase.from('subtasks').update({ done: !currentStatus }).eq('id', id);
-    openTaskDetails(currentTask);
-    loadRoadmap();
+    const { data } = await _supabase.from('subtasks').select('*').eq('task_id', currentTask.id).order('created_at', { ascending: true });
+    currentTask.subtasks = data || [];
+    renderChecklist();
 }
 
 async function deleteCurrentTask() {
@@ -262,7 +263,6 @@ async function deleteCurrentTask() {
 
 function updateAIContext() {
     if (!currentProject) return;
-    const doing = allTasks.filter(t => t.status === 'doing');
     const val = (id) => document.getElementById(id)?.value || '';
     const contextText = `# PROJETO: ${currentProject.name}\n- STACK: ${val('t-front')} + ${val('t-back')}\n- PROGRESSO: ${allTasks.filter(t=>t.status==='done').length}/${allTasks.length} tarefas.`;
     const codeEl = document.getElementById('sync-code');
