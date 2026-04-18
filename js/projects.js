@@ -1,9 +1,15 @@
-// Gestão de Projetos (CRUD e Provisionamento)
+// Gestao de Projetos (CRUD e Provisionamento)
 async function loadProjects() {
-    const { data, error } = await _supabase.from('projects').select('*').order('created_at', { ascending: false });
-    if (error) throw error;
-    allProjects = data || [];
-    renderProjectGrid();
+    console.log("Tentando carregar projetos...");
+    try {
+        const { data, error } = await _supabase.from('projects').select('*').order('created_at', { ascending: false });
+        if (error) throw error;
+        allProjects = data || [];
+        renderProjectGrid();
+        console.log("Projetos carregados:", allProjects.length);
+    } catch (e) {
+        console.error("Falha ao carregar projetos:", e);
+    }
 }
 
 function renderProjectGrid() {
@@ -14,9 +20,9 @@ function renderProjectGrid() {
         const card = document.createElement('div');
         card.className = 'project-card';
         card.innerHTML = `
-            <button class="btn-delete-project" onclick="deleteProject(event, '${p.id}')">🗑️</button>
+            <button class="btn-delete-project" onclick="deleteProject(event, '${p.id}')">Excluir</button>
             <div onclick="selectProjectById('${p.id}')" style="display:flex; align-items:center; gap:1.2rem; width:100%">
-                <div class="project-card-icon">📁</div>
+                <div class="project-card-icon">Folder</div>
                 <div class="project-card-info">
                     <h3 style="margin:0">${p.name}</h3>
                     <p style="margin:0; opacity:0.6">${p.status || 'Ativo'}</p>
@@ -47,13 +53,13 @@ async function createProject() {
     const vercelUrl = document.getElementById('new-project-vercel').value;
     const supabaseConf = document.getElementById('new-project-supabase').value;
 
-    if (!name) return alert('Nome obrigatório');
+    if (!name) return alert('Nome obrigatorio');
     const projectData = { name, status: 'active', github_url: gitUrl, vercel_url: vercelUrl, supabase_config: supabaseConf };
     const { data, error } = await _supabase.from('projects').insert([projectData]).select();
     if (error) return alert('Erro: ' + error.message);
-    
+
     await injectFoundationalTasks(data[0].id);
-    
+
     try {
         await fetch('http://localhost:3000/provision', {
             method: 'POST',
@@ -69,14 +75,14 @@ async function createProject() {
 
 async function injectFoundationalTasks(projectId) {
     const epics = [
-        { project_id: projectId, category: 'blueprint', title: '🎯 1. Preencher Fundamentos', status: 'todo' },
-        { project_id: projectId, category: 'business', title: '💼 2. Business Model Canvas', status: 'todo' },
-        { project_id: projectId, category: 'design', title: '🎨 3. UX & Identidade Visual', status: 'todo' },
-        { project_id: projectId, category: 'back', title: '⚙️ 4. Definir Stack & Arquitetura', status: 'todo' },
-        { project_id: projectId, category: 'back', title: '💾 5. Modelagem de Dados', status: 'todo' },
-        { project_id: projectId, category: 'infra', title: '🏗️ 6. Setup Infra & DevOps', status: 'todo' },
-        { project_id: projectId, category: 'blueprint', title: '🚀 7. Definir Escopo MVP', status: 'todo' },
-        { project_id: projectId, category: 'design', title: '🧠 8. Engenharia de Experiência', status: 'todo' }
+        { project_id: projectId, category: 'blueprint', title: '1. Fundamentos', status: 'todo' },
+        { project_id: projectId, category: 'business', title: '2. Business Model Canvas', status: 'todo' },
+        { project_id: projectId, category: 'design', title: '3. UX & Design', status: 'todo' },
+        { project_id: projectId, category: 'back', title: '4. Stack & Arquitetura', status: 'todo' },
+        { project_id: projectId, category: 'back', title: '5. Modelagem de Dados', status: 'todo' },
+        { project_id: projectId, category: 'infra', title: '6. Setup Infra & DevOps', status: 'todo' },
+        { project_id: projectId, category: 'blueprint', title: '7. Definir Escopo MVP', status: 'todo' },
+        { project_id: projectId, category: 'design', title: '8. Experience Logic', status: 'todo' }
     ];
     await _supabase.from('tasks').insert(epics);
 }
