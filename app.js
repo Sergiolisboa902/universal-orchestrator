@@ -26,13 +26,8 @@ async function init() {
         document.getElementById('loading-overlay').style.display = 'none';
         console.log("✨ Sistema pronto.");
         
-        // Se houver um projeto salvo na sessão, seleciona ele
-        const lastId = localStorage.getItem('currentProjectId');
-        if (lastId) {
-            selectProjectById(lastId);
-        } else {
-            backToProjects();
-        }
+        // Sempre volta para a lista de projetos ao iniciar/recarregar
+        backToProjects();
     } catch (e) {
         console.error("❌ Erro na inicialização:", e);
         document.getElementById('loading-overlay').innerHTML = `
@@ -89,11 +84,34 @@ async function deleteProject(event, id) {
 
 async function createProject() {
     const name = document.getElementById('new-project-name').value;
+    const basePath = document.getElementById('new-project-path').value;
     if (!name) return alert('Digite o nome');
+    
+    // 1. Criar no Supabase
     const { data, error } = await _supabase.from('projects').insert([{ name, status: 'active' }]).select();
     if (error) return alert('Erro: ' + error.message);
     const newProject = data[0];
+    
+    // 2. Injetar tarefas base
     await injectFoundationalTasks(newProject.id);
+    
+    // 3. Tentar Provisionamento Local
+    try {
+        console.log("📡 Solicitando provisionamento local...");
+        const res = await fetch('http://localhost:3000/provision', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ projectName: name, basePath: basePath })
+        });
+        if (res.ok) {
+            console.log("✅ Provisionamento local concluído com sucesso.");
+        } else {
+            console.warn("⚠️ Servidor local não respondeu. Pasta não criada.");
+        }
+    } catch (e) {
+        console.warn("ℹ️ Provisionamento local pulado (Servidor Offline).");
+    }
+
     closeModal('project');
     await loadProjects();
     selectProject(newProject);

@@ -203,8 +203,14 @@
 <div class="modal-overlay" id="modal-project">
     <div class="modal-content">
         <div class="modal-header"><h2>Novo Projeto</h2></div>
-        <div class="modal-body"><div class="field"><label>Nome</label><input type="text" id="new-project-name"></div></div>
-        <div class="modal-footer"><button class="btn" onclick="closeModal('project')">Cancelar</button><button class="btn btn-primary" onclick="createProject()">Criar</button></div>
+        <div class="modal-body">
+            <div class="field"><label>Nome do Projeto</label><input type="text" id="new-project-name" placeholder="Ex: App Romper"></div>
+            <div class="field">
+                <label>Diretório Base (Onde criar a pasta?)</label>
+                <input type="text" id="new-project-path" value="C:\Users\Adm\Documents\Projetos\" placeholder="C:\Caminho\Para\Projetos\">
+            </div>
+        </div>
+        <div class="modal-footer"><button class="btn" onclick="closeModal('project')">Cancelar</button><button class="btn btn-primary" onclick="createProject()">Criar e Provisionar</button></div>
     </div>
 </div>
 
