@@ -1,4 +1,4 @@
-// Configuração Interna Segura (v13.0.3)
+// Configuração Interna Segura (v13.0.5)
 const CONFIG = {
     SUPABASE_URL: "https://rppctxuvncoqfgjbfczo.supabase.co",
     SUPABASE_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwcGN0eHV2bmNvcWZnamJmY3pvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4NjU3ODQsImV4cCI6MjA5MTQ0MTc4NH0.OAzfJCLB7x3VpmRYBis4bvbseCDrfcVtZ6ZuBAjqIr4"
@@ -25,16 +25,18 @@ function formatTime(seconds) {
 }
 
 async function init() {
-    console.log("🚀 Orquestrador v13.0.3 Ativo");
+    console.log("🚀 Orquestrador v13.0.5 Ativo");
     try {
         _supabase = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY);
         await loadProjects();
-        document.getElementById('loading-overlay').style.display = 'none';
+        const overlay = document.getElementById('loading-overlay');
+        if (overlay) overlay.style.display = 'none';
         backToProjects();
     } catch (e) {
         console.error("Erro init:", e);
-        if (document.getElementById('loading-overlay')) {
-            document.getElementById('loading-overlay').innerHTML = `<div style="text-align:center"><h2 style="color:var(--red)">Erro de Conexão</h2><p>${e.message}</p></div>`;
+        const overlay = document.getElementById('loading-overlay');
+        if (overlay) {
+            overlay.innerHTML = `<div style="text-align:center"><h2 style="color:var(--red)">Erro de Conexão</h2><p>${e.message}</p></div>`;
         }
     }
 }
@@ -212,7 +214,8 @@ async function closeModal(type) {
         await _supabase.from('tasks').update({ time_spent: finalTime }).eq('id', taskId);
         await loadRoadmap();
     }
-    document.getElementById(`modal-${type}`).style.display = 'none';
+    const el = document.getElementById(`modal-${type}`);
+    if (el) el.style.display = 'none';
 }
 
 function renderChecklist() {
@@ -225,6 +228,10 @@ function renderChecklist() {
         div.innerHTML = `<div class="subtask-text">${item.text}</div><input type="checkbox" ${item.done ? 'checked' : ''} onchange="toggleSubtask('${item.id}', ${item.done})">`;
         container.appendChild(div);
     });
+    const completed = (currentTask.subtasks || []).filter(i => i.done).length;
+    const total = (currentTask.subtasks || []).length;
+    const progressEl = document.getElementById('det-progress');
+    if (progressEl) progressEl.innerText = total > 0 ? Math.round((completed / total) * 100) + '%' : '0%';
 }
 
 async function addSubtask() {
@@ -255,7 +262,7 @@ async function deleteCurrentTask() {
 
 function updateAIContext() {
     if (!currentProject) return;
-    const contextText = `# PROJETO: ${currentProject.name}\n- STATUS: ${allTasks.filter(t => t.status === 'done').length}/${allTasks.length} tarefas.`;
+    const contextText = `# PROJETO: ${currentProject.name}\n- STATUS: ${allTasks.filter(t => t.status === 'done').length}/${allTasks.length} tarefas concluídas.`;
     const codeEl = document.getElementById('sync-code');
     if (codeEl) codeEl.innerText = contextText;
 }
@@ -265,10 +272,11 @@ function renderMetrics() {
     const done = allTasks.filter(t => t.status === 'done').length;
     const total = allTasks.length;
     const percent = total > 0 ? Math.round((done / total) * 100) : 0;
-    
+    const active = allTasks.filter(t => t.status === 'doing').length;
+
     document.getElementById('metric-total-progress').innerText = percent + '%';
     document.getElementById('bar-total-progress').style.width = percent + '%';
-    document.getElementById('metric-active-tasks').innerText = allTasks.filter(t => t.status === 'doing').length;
+    document.getElementById('metric-active-tasks').innerText = active;
 
     const categories = ['blueprint', 'business', 'design', 'front', 'back', 'infra', 'ia'];
     const container = document.getElementById('metrics-categories');
@@ -290,8 +298,10 @@ function renderMetrics() {
 function switchMainTab(id) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById('page-' + id).classList.add('active');
-    document.getElementById('tab-' + id).classList.add('active');
+    const page = document.getElementById('page-' + id);
+    const tab = document.getElementById('tab-' + id);
+    if (page) page.classList.add('active');
+    if (tab) tab.classList.add('active');
     if (id === 'metrics') renderMetrics();
     if (id === 'sync') updateAIContext();
     if (id === 'pitch') { currentSlide = 0; renderPitchDeck(); }
@@ -300,8 +310,9 @@ function switchMainTab(id) {
 function switchBP(n) {
     document.querySelectorAll('.form-section').forEach(s => s.classList.remove('active'));
     document.querySelectorAll('.bp-nav-item').forEach(i => i.classList.remove('active'));
-    document.getElementById('bp-' + n).classList.add('active');
+    const section = document.getElementById('bp-' + n);
     const navItems = document.querySelectorAll('.bp-nav-item');
+    if (section) section.classList.add('active');
     if (navItems[n]) navItems[n].classList.add('active');
 }
 
@@ -351,7 +362,8 @@ function renderPitchDeck() {
         `<h2>Status</h2><h1>${allTasks.filter(t=>t.status==='done').length}/${allTasks.length}</h1><p>Tarefas concluídas.</p>`
     ];
     viewer.innerHTML = slides.map((c, i) => `<div class="slide ${i === currentSlide ? 'active' : ''}">${c}</div>`).join('');
-    document.getElementById('slide-number').innerText = `${currentSlide + 1} / ${slides.length}`;
+    const num = document.getElementById('slide-number');
+    if (num) num.innerText = `${currentSlide + 1} / ${slides.length}`;
 }
 function nextSlide() { if (currentSlide < 1) { currentSlide++; renderPitchDeck(); } }
 function prevSlide() { if (currentSlide > 0) { currentSlide--; renderPitchDeck(); } }
@@ -460,7 +472,10 @@ async function saveBlueprint() {
 function openModal(type, targetStatus = 'todo') { 
     const el = document.getElementById(`modal-${type}`);
     if (el) el.style.display = 'flex'; 
-    if (type === 'task') document.getElementById('task-status-target').value = targetStatus;
+    if (type === 'task') {
+        const input = document.getElementById('task-status-target');
+        if (input) input.value = targetStatus;
+    }
 }
 function closeModal(type) { 
     const el = document.getElementById(`modal-${type}`);
