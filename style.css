@@ -194,6 +194,21 @@ textarea { min-height: 80px; }
 /* BLUEPRINT ACTIONS */
 .blueprint-header-actions { display: flex; justify-content: flex-end; width: 100%; }
 
+/* SETUP GUIDE & HINTS */
+.setup-guide { 
+    background: rgba(109, 88, 255, 0.05); 
+    border: 1px solid rgba(109, 88, 255, 0.2); 
+    border-radius: 8px; 
+    padding: 1rem; 
+    font-size: 12px; 
+    line-height: 1.4; 
+    color: var(--text2); 
+    margin-bottom: 1.5rem;
+}
+.setup-guide code { background: var(--surface3); color: var(--accent-light); padding: 2px 6px; border-radius: 4px; font-family: var(--mono); }
+.help-hint { font-size: 10px; color: var(--text2); margin-top: -4px; opacity: 0.7; }
+.agent-badge { background: var(--surface3); color: var(--accent-light); font-size: 10px; font-weight: 600; padding: 4px 10px; border-radius: 20px; border: 1px solid var(--border); }
+
 @keyframes spin { to { transform: rotate(360deg); } }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes slideFade { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }

@@ -201,21 +201,48 @@
 
 <!-- MODAIS -->
 <div class="modal-overlay" id="modal-project">
-    <div class="modal-content" style="max-width: 700px;">
-        <div class="modal-header"><h2>🚀 Iniciar Novo Projeto Conectado</h2></div>
+    <div class="modal-content" style="max-width: 800px;">
+        <div class="modal-header">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h2>🚀 Iniciar Novo Projeto Conectado</h2>
+                <div class="agent-badge">🖥️ Agente Local Necessário</div>
+            </div>
+        </div>
         <div class="modal-body">
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+            <!-- GUIA DE REQUISITOS -->
+            <div class="setup-guide">
+                <strong>💡 Antes de começar:</strong> Certifique-se de que o comando <code>node provision-server.js</code> está rodando no terminal deste computador para que a pasta física seja criada automaticamente.
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 1rem;">
                 <div class="column-fields">
-                    <div class="field"><label>Nome do Projeto</label><input type="text" id="new-project-name" placeholder="Ex: App Romper"></div>
+                    <div class="field">
+                        <label>Nome do Projeto</label>
+                        <input type="text" id="new-project-name" placeholder="Ex: App Romper">
+                        <span class="help-hint">O nome que aparecerá no seu dashboard.</span>
+                    </div>
                     <div class="field">
                         <label>📂 Diretório Base Local</label>
                         <input type="text" id="new-project-path" value="C:\Users\Adm\Documents\Projetos\" placeholder="C:\Caminho\Para\Projetos\">
+                        <span class="help-hint">Caminho da pasta 'mãe' onde o projeto será criado.</span>
                     </div>
                 </div>
                 <div class="column-fields">
-                    <div class="field"><label>🐙 GitHub Repo URL</label><input type="text" id="new-project-git" placeholder="https://github.com/..."></div>
-                    <div class="field"><label>🌐 Vercel URL</label><input type="text" id="new-project-vercel" placeholder="https://projeto.vercel.app"></div>
-                    <div class="field"><label>🔥 Supabase Config (Dica)</label><textarea id="new-project-supabase" placeholder="Ex: URL e Key do projeto específico" style="min-height: 60px;"></textarea></div>
+                    <div class="field">
+                        <label>🐙 GitHub Repo URL</label>
+                        <input type="text" id="new-project-git" placeholder="https://github.com/...">
+                        <span class="help-hint">Crie um repo vazio no GitHub e copie a URL .git</span>
+                    </div>
+                    <div class="field">
+                        <label>🌐 Vercel URL</label>
+                        <input type="text" id="new-project-vercel" placeholder="https://projeto.vercel.app">
+                        <span class="help-hint">URL do seu deploy em produção na Vercel.</span>
+                    </div>
+                    <div class="field">
+                        <label>🔥 Supabase Config</label>
+                        <textarea id="new-project-supabase" placeholder="URL e Anon Key" style="min-height: 60px;"></textarea>
+                        <span class="help-hint">Pegue em: Settings > API (URL e Anon Key).</span>
+                    </div>
                 </div>
             </div>
         </div>
