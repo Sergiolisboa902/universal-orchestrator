@@ -212,6 +212,45 @@
                         <div class="field"><label>Escopo Crítico</label><textarea id="f-mvp" oninput="triggerAutoSave()"></textarea></div>
                         <div class="field"><label>Roadmap v2</label><textarea id="f-roadmap-v2" oninput="triggerAutoSave()"></textarea></div>
                     </div>
+
+                    <div class="form-section" id="bp-7">
+                        <div class="ux-header-pro">
+                            <h2>🧠 Experience Logic & State Machine</h2>
+                            <span class="agent-badge">Modo Engenharia Ativo</span>
+                        </div>
+
+                        <div class="ux-main-layout">
+                            <!-- COLUNA ESQUERDA: FLUXOS -->
+                            <div class="ux-column">
+                                <div class="ux-card">
+                                    <h3>🔄 Navegação & Transições</h3>
+                                    <div class="field"><label>Mapa de Estados (State Machine)</label><textarea id="f-logic-states" style="min-height: 120px;" placeholder="Ex: INITIAL -> [Login Success] -> AUTHENTICATED -> [Logout] -> INITIAL" oninput="triggerAutoSave()"></textarea></div>
+                                    <div class="field"><label>Fluxo de Telas (User Path)</label><textarea id="f-logic-path" style="min-height: 80px;" placeholder="Home -> Clique Card -> Detalhes -> Clique Edit -> Modal Edit" oninput="triggerAutoSave()"></textarea></div>
+                                </div>
+
+                                <div class="ux-card">
+                                    <h3>🛡️ Gestão de Erros e Edge Cases</h3>
+                                    <div class="field"><label>Empty States (Páginas Vazias)</label><textarea id="f-logic-empty" placeholder="O que mostrar quando não houver dados em cada tela?" oninput="triggerAutoSave()"></textarea></div>
+                                    <div class="field"><label>Error Handling Logic</label><textarea id="f-logic-errors" placeholder="Ex: Erro 401 -> Redirecionar para Login. Erro 500 -> Mostrar Toast de Suporte." oninput="triggerAutoSave()"></textarea></div>
+                                </div>
+                            </div>
+
+                            <!-- COLUNA DIREITA: INTERAÇÕES -->
+                            <div class="ux-column">
+                                <div class="ux-card">
+                                    <h3>⚡ Micro-interações & Gatilhos</h3>
+                                    <div class="field"><label>Feedback de Ação (Triggers)</label><textarea id="f-logic-triggers" style="min-height: 100px;" placeholder="Ex: Botão de Save -> Mostrar Loading -> Mudar para Check após sucesso." oninput="triggerAutoSave()"></textarea></div>
+                                    <div class="field"><label>Animações e Timing</label><textarea id="f-logic-anim" placeholder="Ex: Modais abrem em 300ms ease-out. Itens da lista fazem slide-fade." oninput="triggerAutoSave()"></textarea></div>
+                                </div>
+
+                                <div class="ux-card">
+                                    <h3>💾 Data Persistence Strategy</h3>
+                                    <div class="field"><label>Lógica de Cache/Sincronização</label><textarea id="f-logic-sync" placeholder="Ex: Salvar rascunho no LocalStorage a cada 30s. Sincronizar banco no Close." oninput="triggerAutoSave()"></textarea></div>
+                                    <div class="field"><label>Regras de Permissão (Roles)</label><textarea id="f-logic-roles" placeholder="Quem pode ver/editar o quê na experiência?" oninput="triggerAutoSave()"></textarea></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

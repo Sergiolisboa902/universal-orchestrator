@@ -393,7 +393,12 @@ function fillBlueprintFields(p) {
         'f-font-head': p.font_head, 'f-font-body': p.font_body, 'f-font-scale': p.font_scale,
         'f-journey': p.user_journey, 'f-behavior': p.behavior_rules, 'f-ui-feedback': p.ui_feedback,
         'f-visual-refs': p.visual_refs, 'f-screen-map': p.screen_map,
-        't-front': p.frontend_stack, 't-back': p.tech_backend, 't-style': p.style_stack, 't-auth': p.tech_auth, 't-apis': p.tech_apis,
+        'f-logic-states': p.logic_states, 'f-logic-path': p.logic_path,
+        'f-logic-empty': p.logic_empty, 'f-logic-errors': p.logic_errors,
+        'f-logic-triggers': p.logic_triggers, 'f-logic-anim': p.logic_anim,
+        'f-logic-sync': p.logic_sync, 'f-logic-roles': p.logic_roles,
+        't-front': p.frontend_stack,
+ 't-back': p.tech_backend, 't-style': p.style_stack, 't-auth': p.tech_auth, 't-apis': p.tech_apis,
         'f-schema': p.db_schema, 'f-db-policies': p.db_policies,
         'f-git': p.github_url, 'f-supabase': p.supabase_config, 'f-vercel': p.vercel_url,
         'f-mvp': p.mvp_scope, 'f-roadmap-v2': p.roadmap_v2
@@ -464,6 +469,12 @@ function handleDragOver(e) { e.preventDefault(); }
 async function handleDrop(e, targetStatus) {
     const taskId = e.dataTransfer.getData('text/plain');
     await _supabase.from('tasks').update({ status: targetStatus }).eq('id', taskId);
+    loadRoadmap();
+}
+function copySync() { navigator.clipboard.writeText(document.getElementById('sync-code').innerText); alert('Copiado!'); }
+
+document.addEventListener('DOMContentLoaded', init);
+om('tasks').update({ status: targetStatus }).eq('id', taskId);
     loadRoadmap();
 }
 function copySync() { navigator.clipboard.writeText(document.getElementById('sync-code').innerText); alert('Copiado!'); }
