@@ -1,4 +1,4 @@
-// Configuração Interna Segura (v13.0.6)
+// Universal Orchestrator - v13.0.8 (Final Stable)
 const CONFIG = {
     SUPABASE_URL: "https://rppctxuvncoqfgjbfczo.supabase.co",
     SUPABASE_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwcGN0eHV2bmNvcWZnamJmY3pvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4NjU3ODQsImV4cCI6MjA5MTQ0MTc4NH0.OAzfJCLB7x3VpmRYBis4bvbseCDrfcVtZ6ZuBAjqIr4"
@@ -25,7 +25,7 @@ function formatTime(seconds) {
 }
 
 async function init() {
-    console.log("🚀 Orquestrador v13.0.6 Ativo");
+    console.log("🚀 Orquestrador v13.0.8 Ativo");
     try {
         _supabase = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY);
         await loadProjects();
@@ -34,9 +34,8 @@ async function init() {
         backToProjects();
     } catch (e) {
         console.error("Erro init:", e);
-        const overlay = document.getElementById('loading-overlay');
-        if (overlay) {
-            overlay.innerHTML = `<div style="text-align:center"><h2 style="color:var(--red)">Erro de Conexão</h2><p>${e.message}</p></div>`;
+        if (document.getElementById('loading-overlay')) {
+            document.getElementById('loading-overlay').innerHTML = `<div style="text-align:center"><h2 style="color:var(--red)">Erro de Conexão</h2><p>${e.message}</p></div>`;
         }
     }
 }
@@ -267,6 +266,17 @@ function updateAIContext() {
     if (codeEl) codeEl.innerText = contextText;
 }
 
+function generateSpecificPrompt() {
+    const mode = document.getElementById('prompt-mode').value;
+    const baseContext = document.getElementById('sync-code').innerText;
+    let specific = "";
+    if (mode === 'code') specific = "\n\nAtue como Sênior Dev. Gere o código baseado no contexto.";
+    else if (mode === 'business') specific = "\n\nAnalise o modelo de negócios e sugira melhorias.";
+    else if (mode === 'debug') specific = "\n\nIdentifique a causa raiz do erro técnico.";
+    navigator.clipboard.writeText(baseContext + specific);
+    alert('Prompt ' + mode + ' Copiado!');
+}
+
 function renderMetrics() {
     if (!currentProject) return;
     const done = allTasks.filter(t => t.status === 'done').length;
@@ -322,7 +332,7 @@ async function handleUXUpload(input) {
     const reader = new FileReader();
     reader.onload = async (e) => {
         let refs = [];
-        try { refs = JSON.parse(document.getElementById('f-visual-refs').value || '[]'); } catch(e) {}
+        try { refs = JSON.parse(document.getElementById('f-visual-refs').value || '[]'); } catch(err) {}
         refs.push({ id: Date.now(), data: e.target.result });
         document.getElementById('f-visual-refs').value = JSON.stringify(refs);
         renderUXGallery();
@@ -335,12 +345,13 @@ function renderUXGallery() {
     const gallery = document.getElementById('ux-gallery');
     if (!gallery) return;
     let refs = [];
-    try { refs = JSON.parse(document.getElementById('f-visual-refs').value || '[]'); } catch(e) {}
+    try { refs = JSON.parse(document.getElementById('f-visual-refs').value || '[]'); } catch(err) {}
     gallery.innerHTML = refs.map(img => `<div class="ux-img-container"><img src="${img.data}" onclick="window.open('${img.data}')"><button class="ux-img-remove" onclick="removeUXImage(${img.id})">&times;</button></div>`).join('');
 }
 
 function removeUXImage(id) {
-    let refs = JSON.parse(document.getElementById('f-visual-refs').value || '[]');
+    let refs = [];
+    try { refs = JSON.parse(document.getElementById('f-visual-refs').value || '[]'); } catch(err) {}
     refs = refs.filter(r => r.id !== id);
     document.getElementById('f-visual-refs').value = JSON.stringify(refs);
     renderUXGallery();
@@ -465,8 +476,8 @@ async function saveBlueprint() {
     };
     try {
         await _supabase.from('projects').update(data).eq('id', currentProject.id);
-        if (s) { s.innerText = "✅ Sincronizado"; s.style.color = "var(--green)"; }
-    } catch (e) { if (s) s.innerText = "❌ Erro"; }
+        if (s) { s.innerText = "OK Sincronizado"; s.style.color = "var(--green)"; }
+    } catch (e) { if (s) { s.innerText = "Erro"; s.style.color = "var(--red)"; } }
 }
 
 function openModal(type, targetStatus = 'todo') { 
