@@ -281,18 +281,14 @@
         <div class="modal-header">
             <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                 <div><span id="det-category" class="category-tag">Categoria</span><h2 id="det-title" style="margin-top: 5px;">Título</h2></div>
-                <button class="btn" onclick="closeModal('task-details')" style="background:transparent; font-size:24px; color:var(--text2)">&times;</button>
+                <div id="det-timer-section" class="det-timer-compact">
+                    <span id="det-timer-display" class="timer-display-small">00:00:00</span>
+                    <button id="det-timer-btn" class="btn-timer-icon-small" onclick="toggleTimerFromModal()">▶️</button>
+                </div>
             </div>
             <p id="det-desc" style="color:var(--text2); font-size:11px; background:var(--surface2); padding:0.6rem; border-radius:6px; margin:0.8rem 0;"></p>
             <div class="field" style="margin:0"><label style="font-size:9px">Add Subtarefa (<span id="det-progress">0%</span>)</label>
                 <div class="subtask-input-group"><input type="text" id="new-subtask-name" onkeyup="if(event.key==='Enter') addSubtask()"><button class="btn btn-primary" onclick="addSubtask()">+</button></div>
-            </div>
-            <div id="det-timer-section" class="det-timer-box">
-                <label style="font-size:9px">Cronômetro de Atividade</label>
-                <div style="display:flex; align-items:center; gap:10px;">
-                    <span id="det-timer-display" class="timer-display">00:00:00</span>
-                    <button id="det-timer-btn" class="btn-timer-icon" onclick="toggleTimerFromModal()">▶️</button>
-                </div>
             </div>
         </div>
         <div class="modal-body"><div id="checklist-container"></div></div>

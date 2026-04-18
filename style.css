@@ -210,10 +210,9 @@ textarea { min-height: 80px; }
 .agent-badge { background: var(--surface3); color: var(--accent-light); font-size: 10px; font-weight: 600; padding: 4px 10px; border-radius: 20px; border: 1px solid var(--border); }
 
 /* TIMER STYLES */
-.det-timer-box { background: var(--surface3); padding: 12px; border-radius: 10px; margin-top: 15px; border: 1px solid var(--border); }
-.timer-display { font-family: var(--mono); font-size: 1.5rem; font-weight: 600; color: var(--accent-light); }
-.btn-timer-icon { background: none; border: none; font-size: 1.2rem; cursor: pointer; transition: transform 0.2s; }
-.btn-timer-icon:hover { transform: scale(1.2); }
+.det-timer-compact { display: flex; align-items: center; gap: 8px; background: var(--surface3); padding: 4px 12px; border-radius: 20px; border: 1px solid var(--border); margin-top: 10px; }
+.timer-display-small { font-family: var(--mono); font-size: 13px; font-weight: 600; color: var(--accent-light); }
+.btn-timer-icon-small { background: none; border: none; font-size: 12px; cursor: pointer; }
 
 .task-timer-mini { font-family: var(--mono); font-size: 10px; color: var(--text2); background: var(--surface3); padding: 2px 6px; border-radius: 4px; display: flex; align-items: center; gap: 5px; margin-top: 10px; width: fit-content; }
 .timer-active { color: var(--green); animation: pulseTimer 1.5s infinite; }
