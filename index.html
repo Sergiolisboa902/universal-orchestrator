@@ -287,6 +287,13 @@
             <div class="field" style="margin:0"><label style="font-size:9px">Add Subtarefa (<span id="det-progress">0%</span>)</label>
                 <div class="subtask-input-group"><input type="text" id="new-subtask-name" onkeyup="if(event.key==='Enter') addSubtask()"><button class="btn btn-primary" onclick="addSubtask()">+</button></div>
             </div>
+            <div id="det-timer-section" class="det-timer-box">
+                <label style="font-size:9px">Cronômetro de Atividade</label>
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <span id="det-timer-display" class="timer-display">00:00:00</span>
+                    <button id="det-timer-btn" class="btn-timer-icon" onclick="toggleTimerFromModal()">▶️</button>
+                </div>
+            </div>
         </div>
         <div class="modal-body"><div id="checklist-container"></div></div>
         <div class="modal-footer"><button class="btn" style="color:var(--red)" onclick="deleteCurrentTask()">Excluir</button><button class="btn btn-primary" onclick="closeModal('task-details')">Fechar</button></div>

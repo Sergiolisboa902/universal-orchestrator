@@ -191,10 +191,17 @@ async function loadRoadmap() {
         const completed = subtasks.filter(i => i.done).length;
         const total = subtasks.length;
         const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+        const timeSpent = t.time_spent || 0;
+        const isThisActive = activeTaskId === t.id;
+
         card.innerHTML = `
             <span class="category-tag tag-${t.category || 'default'}">${t.category || 'Geral'}</span>
             <span class="task-title">${t.title}</span>
             <p class="task-desc">${t.description || ''}</p>
+            <div class="task-timer-mini ${isThisActive ? 'timer-active' : ''}">
+                ⏱️ ${formatTime(isThisActive ? activeTaskSeconds : timeSpent)}
+            </div>
             ${total > 0 ? `<div class="progress-container"><div class="progress-bar" style="width: ${percent}%"></div></div><span class="progress-text">${completed}/${total} (${percent}%)</span>` : ''}
         `;
         lists[t.status].appendChild(card);
@@ -502,6 +509,36 @@ async function saveBlueprint() {
         screen_map: document.getElementById('f-screen-map').value,
         user_journey: document.getElementById('f-journey').value,
         frontend_stack: document.getElementById('t-front').value,
+        tech_backend: document.getElementById('t-back').value,
+        style_stack: document.getElementById('t-style').value,
+        tech_auth: document.getElementById('t-auth').value,
+        tech_apis: document.getElementById('t-apis').value,
+        db_schema: document.getElementById('f-schema').value,
+        db_policies: document.getElementById('f-db-policies').value,
+        github_url: document.getElementById('f-git').value,
+        supabase_config: document.getElementById('f-supabase').value,
+        vercel_url: document.getElementById('f-vercel').value,
+        mvp_scope: document.getElementById('f-mvp').value,
+        roadmap_v2: document.getElementById('f-roadmap-v2').value
+    };
+    try {
+        await _supabase.from('projects').update(data).eq('id', currentProject.id);
+        if (s) { s.innerText = "✅ Sincronizado"; s.style.color = "var(--green)"; }
+        updateAIContext();
+    } catch (e) { if (s) { s.innerText = "❌ Erro"; s.style.color = "var(--red)"; } }
+}
+
+function openModal(type, targetStatus = 'todo') { 
+    document.getElementById(`modal-${type}`).style.display = 'flex'; 
+    if (type === 'task') { document.getElementById('task-status-target').value = targetStatus; }
+}
+
+function closeModal(type) { document.getElementById(`modal-${type}`).style.display = 'none'; }
+function copySync() { navigator.clipboard.writeText(document.getElementById('sync-code').innerText); alert('Copiado!'); }
+
+// Inicialização - v12.1.1 (Build 2026-04-18)
+document.addEventListener('DOMContentLoaded', init);
+ont').value,
         tech_backend: document.getElementById('t-back').value,
         style_stack: document.getElementById('t-style').value,
         tech_auth: document.getElementById('t-auth').value,
