@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Universal Orchestrator v12.1</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="config.js"></script>
+</head>
+<body>
+
+<div id="loading-overlay"><div class="loader"></div><span>SINCRONIZANDO COM O CÉREBRO...</span></div>
+
+<!-- TELA INICIAL: LISTA DE PROJETOS -->
+<div id="view-projects" class="view-section active">
+    <header class="header">
+        <div class="logo"><div class="dot"></div> UNIVERSAL_ORCHESTRATOR <span style="font-size: 10px; opacity: 0.5;">v12.1</span></div>
+        <button class="btn btn-primary" onclick="openModal('project')">+ Novo Projeto</button>
+    </header>
+    <div class="container">
+        <h2 style="font-family: var(--mono); color: var(--accent-light); margin-bottom: 1rem;">Seus Projetos</h2>
+        <div class="project-grid" id="project-grid"></div>
+    </div>
+</div>
+
+<!-- TELA DE DASHBOARD: PROJETO SELECIONADO -->
+<div id="view-dashboard" class="view-section">
+    <header class="header">
+        <div class="logo" style="cursor: pointer" onclick="backToProjects()">
+            <span style="color: var(--text2)">←</span> <span id="project-title-display">Projeto</span>
+        </div>
+        <div class="tabs">
+            <button class="tab-btn active" id="tab-roadmap" onclick="switchMainTab('roadmap')">Cronograma</button>
+            <button class="tab-btn" id="tab-metrics" onclick="switchMainTab('metrics')">Métricas</button>
+            <button class="tab-btn" id="tab-blueprint" onclick="switchMainTab('blueprint')">Planejamento</button>
+            <button class="tab-btn" id="tab-pitch" onclick="switchMainTab('pitch')">Pitch Deck</button>
+            <button class="tab-btn" id="tab-sync" onclick="switchMainTab('sync')">IA_Engine</button>
+        </div>
+        <div id="sync-status" style="font-size: 11px; font-family: var(--mono); color: var(--green);">✅ SINCRONIZADO</div>
+    </header>
+
+    <div class="container">
+        <!-- 1. CRONOGRAMA (KANBAN) -->
+        <div id="page-roadmap" class="page active">
+            <div class="roadmap-grid">
+                <div class="column" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'todo')">
+                    <div class="column-header">Pendente</div>
+                    <div class="task-list">
+                        <button class="btn-add-task" onclick="openModal('task', 'todo')">+ Nova Tarefa</button>
+                        <div id="list-todo"></div>
+                    </div>
+                </div>
+                <div class="column" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'doing')">
+                    <div class="column-header">Em Andamento</div>
+                    <div class="task-list">
+                        <button class="btn-add-task" onclick="openModal('task', 'doing')">+ Nova Tarefa</button>
+                        <div id="list-doing"></div>
+                    </div>
+                </div>
+                <div class="column" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'done')">
+                    <div class="column-header">Concluído</div>
+                    <div class="task-list">
+                        <button class="btn-add-task" onclick="openModal('task', 'done')">+ Nova Tarefa</button>
+                        <div id="list-done"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- DASHBOARD DE MÉTRICAS -->
+        <div id="page-metrics" class="page">
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <h3>Progresso Geral</h3>
+                    <div class="metric-value" id="metric-total-progress">0%</div>
+                    <div class="metric-chart-bar"><div id="bar-total-progress" style="width: 0%"></div></div>
+                </div>
+                <div class="metric-card">
+                    <h3>Tarefas Ativas</h3>
+                    <div class="metric-value" id="metric-active-tasks">0</div>
+                    <p>Foque no que está em andamento.</p>
+                </div>
+            </div>
+            <div class="category-breakdown" id="metrics-categories">
+                <!-- Preenchido via JS -->
+            </div>
+        </div>
+
+        <!-- 2. PLANEJAMENTO (BLUEPRINT 360) -->
+        <div id="page-blueprint" class="page">
+            <div class="blueprint-header-actions">
+                <button class="btn" style="font-size: 11px; margin-bottom: 10px;" onclick="exportBlueprintMarkdown()">💾 Exportar Markdown</button>
+            </div>
+            <div class="blueprint-container">
+                <nav class="blueprint-nav">
+                    <div class="bp-nav-item active" onclick="switchBP(0)">🎯 1. Fundamentos</div>
+                    <div class="bp-nav-item" onclick="switchBP(1)">💼 2. Business Canvas</div>
+                    <div class="bp-nav-item" onclick="switchBP(2)">🎨 3. UX & Design</div>
+                    <div class="bp-nav-item" onclick="switchBP(3)">⚙️ 4. Stack Técnica</div>
+                    <div class="bp-nav-item" onclick="switchBP(4)">💾 5. Dados & Segurança</div>
+                    <div class="bp-nav-item" onclick="switchBP(5)">🏗️ 6. Infra & Deploy</div>
+                    <div class="bp-nav-item" onclick="switchBP(6)">🚀 7. Escopo MVP</div>
+                </nav>
+                <div class="blueprint-content">
+                    <div class="form-section active" id="bp-0">
+                        <h2>🎯 Fundamentos do Sistema</h2>
+                        <div class="field"><label>Nome do Projeto</label><input type="text" id="f-nome" oninput="triggerAutoSave()"></div>
+                        <div class="field"><label>Problema Central (Pain Point)</label><textarea id="f-desc" oninput="triggerAutoSave()"></textarea></div>
+                        <div class="field"><label>Missão e Visão de Produto</label><textarea id="f-goal" oninput="triggerAutoSave()"></textarea></div>
+                        <div class="field"><label>⚠️ Instruções Críticas para IA</label><textarea id="f-instructions" oninput="triggerAutoSave()"></textarea></div>
+                    </div>
+                    <div class="form-section" id="bp-1">
+                        <h2>💼 Business Model Canvas</h2>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem;">
+                            <div class="field"><label>Parceiros Chave</label><textarea id="f-bmc-partners" oninput="triggerAutoSave()"></textarea></div>
+                            <div class="field"><label>Atividades Chave</label><textarea id="f-bmc-activities" oninput="triggerAutoSave()"></textarea></div>
+                            <div class="field"><label>Recursos Chave</label><textarea id="f-bmc-resources" oninput="triggerAutoSave()"></textarea></div>
+                            <div class="field"><label>Proposta de Valor</label><textarea id="f-value" oninput="triggerAutoSave()"></textarea></div>
+                            <div class="field"><label>Relacionamento</label><textarea id="f-bmc-relationships" oninput="triggerAutoSave()"></textarea></div>
+                            <div class="field"><label>Canais</label><textarea id="f-bmc-channels" oninput="triggerAutoSave()"></textarea></div>
+                            <div class="field"><label>Segmentos</label><textarea id="f-bmc-segments" oninput="triggerAutoSave()"></textarea></div>
+                            <div class="field"><label>Custos</label><textarea id="f-bmc-costs" oninput="triggerAutoSave()"></textarea></div>
+                            <div class="field"><label>Receita</label><textarea id="f-revenue" oninput="triggerAutoSave()"></textarea></div>
+                            <div class="field"><label>Métricas Norte</label><textarea id="f-metrics" oninput="triggerAutoSave()"></textarea></div>
+                        </div>
+                    </div>
+                    <div class="form-section" id="bp-2">
+                        <h2>🎨 UX & Identidade Visual</h2>
+                        <div class="field"><label>Branding (Cores/Fontes)</label><textarea id="f-branding" oninput="triggerAutoSave()"></textarea></div>
+                        <div class="field"><label>Mapa de Telas</label><textarea id="f-screen-map" oninput="triggerAutoSave()"></textarea></div>
+                        <div class="field"><label>Jornada</label><textarea id="f-journey" oninput="triggerAutoSave()"></textarea></div>
+                    </div>
+                    <div class="form-section" id="bp-3">
+                        <h2>⚙️ Stack Técnica</h2>
+                        <div class="field"><label>Frontend</label><input type="text" id="t-front" oninput="triggerAutoSave()"></div>
+                        <div class="field"><label>Backend</label><input type="text" id="t-back" oninput="triggerAutoSave()"></div>
+                        <div class="field"><label>Estilo</label><input type="text" id="t-style" oninput="triggerAutoSave()"></div>
+                        <div class="field"><label>Auth</label><input type="text" id="t-auth" oninput="triggerAutoSave()"></div>
+                        <div class="field"><label>APIs Integrações</label><textarea id="t-apis" oninput="triggerAutoSave()"></textarea></div>
+                    </div>
+                    <div class="form-section" id="bp-4">
+                        <h2>💾 Dados & Segurança</h2>
+                        <div class="field"><label>Schema SQL</label><textarea id="f-schema" style="font-family: var(--mono); font-size: 11px;" oninput="triggerAutoSave()"></textarea></div>
+                        <div class="field"><label>Políticas RLS</label><textarea id="f-db-policies" oninput="triggerAutoSave()"></textarea></div>
+                    </div>
+                    <div class="form-section" id="bp-5">
+                        <h2>🏗️ Infra & Deploy</h2>
+                        <div class="field"><label>Git Repo</label><input type="text" id="f-git" oninput="triggerAutoSave()"></div>
+                        <div class="field"><label>Supabase Config</label><textarea id="f-supabase" oninput="triggerAutoSave()"></textarea></div>
+                        <div class="field"><label>Vercel URL</label><input type="text" id="f-vercel" oninput="triggerAutoSave()"></div>
+                    </div>
+                    <div class="form-section" id="bp-6">
+                        <h2>🚀 Definição do MVP</h2>
+                        <div class="field"><label>Escopo Crítico</label><textarea id="f-mvp" oninput="triggerAutoSave()"></textarea></div>
+                        <div class="field"><label>Roadmap v2</label><textarea id="f-roadmap-v2" oninput="triggerAutoSave()"></textarea></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. PITCH DECK (APRESENTAÇÃO) -->
+        <div id="page-pitch" class="page">
+            <div class="pitch-container">
+                <div class="slide-viewer" id="slide-viewer"></div>
+                <div class="pitch-nav">
+                    <button class="pitch-btn" onclick="prevSlide()">←</button>
+                    <span id="slide-number" class="slide-indicator">1 / 6</span>
+                    <button class="pitch-btn" onclick="nextSlide()">→</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. IA ENGINE (SYNC) -->
+        <div id="page-sync" class="page">
+            <div class="sync-container">
+                <div class="sync-header">
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <h2 style="font-family: var(--mono); color: var(--accent-light); margin: 0;">Motor de Contexto IA</h2>
+                        <select id="prompt-mode" class="prompt-select" onchange="updateAIContext()">
+                            <option value="strategic">Estratégico (Full)</option>
+                            <option value="code">Desenvolvimento (Código)</option>
+                            <option value="business">Business & Pitch</option>
+                            <option value="debug">Debugging & Fix</option>
+                        </select>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button class="btn btn-secondary" style="font-size: 11px;" onclick="copySync()">Copiar Full</button>
+                        <button class="btn btn-primary" style="font-size: 11px;" onclick="generateSpecificPrompt()">Gerar Prompt Ativo</button>
+                    </div>
+                </div>
+                <div class="sync-content">
+                    <pre id="sync-code">Gerando contexto estratégico...</pre>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- MODAIS -->
+<div class="modal-overlay" id="modal-project">
+    <div class="modal-content">
+        <div class="modal-header"><h2>Novo Projeto</h2></div>
+        <div class="modal-body"><div class="field"><label>Nome</label><input type="text" id="new-project-name"></div></div>
+        <div class="modal-footer"><button class="btn" onclick="closeModal('project')">Cancelar</button><button class="btn btn-primary" onclick="createProject()">Criar</button></div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="modal-task">
+    <div class="modal-content">
+        <div class="modal-header"><h2>Nova Tarefa</h2></div>
+        <div class="modal-body">
+            <input type="hidden" id="task-status-target">
+            <div class="field"><label>Título</label><input type="text" id="task-title"></div>
+            <div class="field"><label>Descrição</label><textarea id="task-desc"></textarea></div>
+            <div class="field"><label>Categoria</label>
+                <select id="task-category">
+                    <option value="blueprint">Planejamento</option>
+                    <option value="business">Negócios</option>
+                    <option value="design">Design/UX</option>
+                    <option value="front">Frontend</option>
+                    <option value="back">Backend</option>
+                    <option value="infra">Infra/DevOps</option>
+                    <option value="ia">IA Engine</option>
+                </select>
+            </div>
+        </div>
+        <div class="modal-footer"><button class="btn" onclick="closeModal('task')">Cancelar</button><button class="btn btn-primary" onclick="createTask()">Criar</button></div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="modal-task-details">
+    <div class="modal-content" style="max-width: 700px;">
+        <div class="modal-header">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div><span id="det-category" class="category-tag">Categoria</span><h2 id="det-title" style="margin-top: 5px;">Título</h2></div>
+                <button class="btn" onclick="closeModal('task-details')" style="background:transparent; font-size:24px; color:var(--text2)">&times;</button>
+            </div>
+            <p id="det-desc" style="color:var(--text2); font-size:11px; background:var(--surface2); padding:0.6rem; border-radius:6px; margin:0.8rem 0;"></p>
+            <div class="field" style="margin:0"><label style="font-size:9px">Add Subtarefa (<span id="det-progress">0%</span>)</label>
+                <div class="subtask-input-group"><input type="text" id="new-subtask-name" onkeyup="if(event.key==='Enter') addSubtask()"><button class="btn btn-primary" onclick="addSubtask()">+</button></div>
+            </div>
+        </div>
+        <div class="modal-body"><div id="checklist-container"></div></div>
+        <div class="modal-footer"><button class="btn" style="color:var(--red)" onclick="deleteCurrentTask()">Excluir</button><button class="btn btn-primary" onclick="closeModal('task-details')">Fechar</button></div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="app.js"></script>
+</body>
+</html>
