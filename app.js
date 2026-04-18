@@ -1,7 +1,4 @@
-const SUPABASE_URL = CONFIG.SUPABASE_URL;
-const SUPABASE_KEY = CONFIG.SUPABASE_KEY;
-const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
+let _supabase = null;
 let currentProject = null;
 let allTasks = [];
 let allProjects = [];
@@ -10,19 +7,47 @@ let saveTimeout = null;
 let currentSlide = 0;
 
 async function init() {
+    console.log("🚀 Inicializando Orquestrador...");
     try {
+        // Verifica se o CONFIG foi carregado
+        if (typeof CONFIG === 'undefined') {
+            throw new Error("Configurações não encontradas (config.js ausente).");
+        }
+
+        // Inicializa Supabase
+        _supabase = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY);
+        console.log("✅ Supabase conectado.");
+
+        // Carrega projetos
         await loadProjects();
+        
+        // Esconde o overlay
         document.getElementById('loading-overlay').style.display = 'none';
-        backToProjects();
+        console.log("✨ Sistema pronto.");
+        
+        // Se houver um projeto salvo na sessão, seleciona ele
+        const lastId = localStorage.getItem('currentProjectId');
+        if (lastId) {
+            selectProjectById(lastId);
+        } else {
+            backToProjects();
+        }
     } catch (e) {
-        console.error(e);
-        document.getElementById('loading-overlay').innerHTML = `<div>Erro na conexão: ${e.message}</div>`;
+        console.error("❌ Erro na inicialização:", e);
+        document.getElementById('loading-overlay').innerHTML = `
+            <div style="text-align:center; padding: 20px;">
+                <h2 style="color:var(--red)">Erro Crítico</h2>
+                <p style="margin:10px 0">${e.message}</p>
+                <button class="btn btn-primary" onclick="location.reload()">Tentar Novamente</button>
+            </div>
+        `;
     }
 }
 
 // GESTÃO DE PROJETOS
 async function loadProjects() {
     const { data: projects, error } = await _supabase.from('projects').select('*').order('created_at', { ascending: false });
+    if (error) throw error;
     allProjects = projects || [];
     renderProjectGrid();
 }
@@ -101,7 +126,7 @@ function backToProjects() {
     localStorage.removeItem('currentProjectId');
     document.getElementById('view-projects').style.display = 'flex'; 
     document.getElementById('view-dashboard').style.display = 'none'; 
-    loadProjects();
+    renderProjectGrid(); // Apenas renderiza o que já está na memória
 }
 
 // GESTÃO DE TAREFAS
@@ -215,12 +240,7 @@ async function deleteCurrentTask() {
 function updateAIContext() {
     if (!currentProject) return;
     const doing = allTasks.filter(t => t.status === 'doing');
-    
-    // Função auxiliar para pegar valor de forma segura
-    const val = (id) => {
-        const el = document.getElementById(id);
-        return el ? el.value : '';
-    };
+    const val = (id) => document.getElementById(id)?.value || '';
 
     const contextText = `
 # CONTEXTO ESTRATÉGICO DE ALTO NÍVEL
@@ -266,6 +286,7 @@ ${val('f-schema')}
 // PITCH DECK ENGINE
 function renderPitchDeck() {
     const viewer = document.getElementById('slide-viewer');
+    if (!viewer || !currentProject) return;
     const p = currentProject;
     const doneTasks = allTasks.filter(t => t.status === 'done').length;
     const totalTasks = allTasks.length;
@@ -275,7 +296,7 @@ function renderPitchDeck() {
         `<h2>O Problema</h2><p>${p.description || 'Não definido.'}</p>`,
         `<h2>A Solução</h2><p>${p.value_proposition || 'Não definido.'}</p>`,
         `<h2>Modelo de Negócio</h2><p><b>Receita:</b> ${p.revenue_sources || 'Não definido'}<br><b>Custos:</b> ${p.bmc_costs || 'Não definido'}</p>`,
-        `<h2>Stack Tecnológica</h2><p>${p.frontend_stack} + ${p.tech_backend}<br>Segurança via ${p.tech_auth || 'Supabase Auth'}</p>`,
+        `<h2>Stack Tecnológica</h2><p>${p.frontend_stack || 'N/A'} + ${p.tech_backend || 'N/A'}<br>Segurança via ${p.tech_auth || 'Supabase Auth'}</p>`,
         `<h2>Status do Projeto</h2><h1>${totalTasks > 0 ? Math.round((doneTasks/totalTasks)*100) : 0}%</h1><p>${doneTasks} de ${totalTasks} etapas concluídas.</p>`
     ];
 
@@ -300,31 +321,30 @@ function renderMetrics() {
 
     const categories = ['blueprint', 'business', 'design', 'front', 'back', 'infra', 'ia'];
     const container = document.getElementById('metrics-categories');
-    container.innerHTML = '';
-
-    categories.forEach(cat => {
-        const catTasks = allTasks.filter(t => t.category === cat);
-        const catDone = catTasks.filter(t => t.status === 'done').length;
-        const catPercent = catTasks.length > 0 ? Math.round((catDone / catTasks.length) * 100) : 0;
-        
-        const div = document.createElement('div');
-        div.className = 'category-metric';
-        div.innerHTML = `
-            <div style="display:flex; justify-content:space-between; margin-bottom:5px">
-                <span style="text-transform:capitalize">${cat}</span>
-                <span>${catPercent}%</span>
-            </div>
-            <div class="metric-chart-bar mini"><div style="width: ${catPercent}%"></div></div>
-        `;
-        container.appendChild(div);
-    });
+    if (container) {
+        container.innerHTML = '';
+        categories.forEach(cat => {
+            const catTasks = allTasks.filter(t => t.category === cat);
+            const catDone = catTasks.filter(t => t.status === 'done').length;
+            const catPercent = catTasks.length > 0 ? Math.round((catDone / catTasks.length) * 100) : 0;
+            const div = document.createElement('div');
+            div.className = 'category-metric';
+            div.innerHTML = `
+                <div style="display:flex; justify-content:space-between; margin-bottom:5px">
+                    <span style="text-transform:capitalize">${cat}</span>
+                    <span>${catPercent}%</span>
+                </div>
+                <div class="metric-chart-bar mini"><div style="width: ${catPercent}%"></div></div>
+            `;
+            container.appendChild(div);
+        });
+    }
 }
 
 // EXPORTAÇÃO
 function exportBlueprintMarkdown() {
     if (!currentProject) return;
     const val = (id) => document.getElementById(id)?.value || '';
-    
     const md = `
 # BLUEPRINT 360: ${currentProject.name}
 Gerado por Universal Orchestrator
@@ -365,7 +385,6 @@ ${val('f-schema')}
 function generateSpecificPrompt() {
     const mode = document.getElementById('prompt-mode').value;
     const baseContext = document.getElementById('sync-code').innerText;
-    
     let specificInstruction = "";
     switch(mode) {
         case 'code':
@@ -380,7 +399,6 @@ function generateSpecificPrompt() {
         default:
             specificInstruction = "\n\n--- INSTRUÇÃO ESTRATÉGICA ---\nConsidere todo o contexto acima como a 'Única Fonte da Verdade' do projeto.";
     }
-
     navigator.clipboard.writeText(baseContext + specificInstruction);
     alert('Prompt Gerado e Copiado para o modo: ' + mode);
 }
@@ -392,7 +410,6 @@ function switchMainTab(id) {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     document.getElementById('page-' + id).classList.add('active');
     document.getElementById('tab-' + id).classList.add('active');
-    
     if (id === 'pitch') { currentSlide = 0; renderPitchDeck(); }
     if (id === 'sync') { updateAIContext(); }
     if (id === 'metrics') { renderMetrics(); }
@@ -423,7 +440,7 @@ function fillBlueprintFields(p) {
 
 function triggerAutoSave() {
     const s = document.getElementById('sync-status');
-    s.innerText = "⏳ Alterando..."; s.style.color = "var(--amber)";
+    if (s) { s.innerText = "⏳ Alterando..."; s.style.color = "var(--amber)"; }
     clearTimeout(saveTimeout);
     saveTimeout = setTimeout(saveBlueprint, 1500);
 }
@@ -431,7 +448,7 @@ function triggerAutoSave() {
 async function saveBlueprint() {
     if (!currentProject) return;
     const s = document.getElementById('sync-status');
-    s.innerText = "☁️ Salvando...";
+    if (s) { s.innerText = "☁️ Salvando..."; }
     const data = {
         name: document.getElementById('f-nome').value,
         description: document.getElementById('f-desc').value,
@@ -465,9 +482,9 @@ async function saveBlueprint() {
     };
     try {
         await _supabase.from('projects').update(data).eq('id', currentProject.id);
-        s.innerText = "✅ Sincronizado"; s.style.color = "var(--green)";
+        if (s) { s.innerText = "✅ Sincronizado"; s.style.color = "var(--green)"; }
         updateAIContext();
-    } catch (e) { s.innerText = "❌ Erro"; s.style.color = "var(--red)"; }
+    } catch (e) { if (s) { s.innerText = "❌ Erro"; s.style.color = "var(--red)"; } }
 }
 
 function openModal(type, targetStatus = 'todo') { 
@@ -478,4 +495,5 @@ function openModal(type, targetStatus = 'todo') {
 function closeModal(type) { document.getElementById(`modal-${type}`).style.display = 'none'; }
 function copySync() { navigator.clipboard.writeText(document.getElementById('sync-code').innerText); alert('Copiado!'); }
 
-init();
+// Inicialização - v12.1.1 (Build 2026-04-18)
+document.addEventListener('DOMContentLoaded', init);
