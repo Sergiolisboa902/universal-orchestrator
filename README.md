@@ -1,55 +1,61 @@
-# 🧠 Universal Orchestrator v12.1.2
+# 🧠 Universal Orchestrator v12.1.3
 
-Sistema Estratégico de Orquestração de Projetos (SPA Vanilla JS + Supabase).
+Sistema Estratégico de Orquestração de Projetos (SPA Vanilla JS + Supabase + Agente Local).
 
 ## 🚀 Visão Geral
-O **Universal Orchestrator** é uma ferramenta de gestão de projetos de alto nível, projetada para transformar ideias brutas em planos de ação executáveis. Ele combina um **Blueprint 360** (planejamento profundo) com um **Kanban dinâmico** e um **Motor de IA** para geração de prompts contextuais.
+O **Universal Orchestrator** é uma "Torre de Controle" estratégica para múltiplos projetos. Ele combina planejamento profundo (**Blueprint 360**), gestão ágil (**Kanban**) e um ecossistema de dados bi-direcional que conecta a Web diretamente ao sistema de arquivos do seu computador.
 
 ---
 
-## 📂 Arquitetura de Arquivos
+## 📂 Arquitetura do Sistema
 
 | Arquivo | Função | Descrição Técnica |
 | :--- | :--- | :--- |
-| `index.html` | **Interface (UI)** | Estrutura SPA que contém todas as telas, modais e containers do sistema. |
-| `app.js` | **Lógica (Cérebro)** | Gerencia a persistência no Supabase, lógica do Kanban, Motor de IA e Auto-save. |
-| `style.css` | **Estética (UX)** | Define a identidade visual "Cyber/Tech", layout responsivo e animações. |
-| `config.js` | **Configuração** | *Backup* das chaves de API. (Nota: As chaves estão unificadas no `app.js` para estabilidade). |
-| `vercel.json` | **Deploy** | Configurações de roteamento e headers para hospedagem na Vercel. |
-| `.gitignore` | **Segurança** | Impede que arquivos sensíveis (como `.env.local`) sejam enviados ao GitHub. |
-| `.project_root`| **Marcador** | Identifica a raiz do projeto para ferramentas de IA e automação. |
+| `index.html` | **Interface (UI)** | Estrutura SPA com dashboard, kanban e guia de setup integrado. |
+| `app.js` | **Lógica (Cérebro)** | Gerencia Supabase, Motor de IA, Métricas e ordens de provisionamento. |
+| `provision-server.js` | **Agente Local** | Servidor Node.js (Porta 3000) que cria pastas e inicia o Git fisicamente. |
+| `sync-orchestrator.js`| **Ponte de Dados** | Script CLI para sincronizar a memória da IA local com o banco de dados. |
+| `style.css` | **Estética (UX)** | Design "Cyber/Tech" responsivo com animações e centralização de cards. |
+| `README.md` | **Documentação** | Este guia de arquitetura e evolução. |
 
 ---
 
-## 🛠️ Funcionalidades Chave
+## 🛠️ Funcionalidades de Elite
 
-1. **Blueprint 360:** 7 seções de planejamento cobrindo desde Fundamentos até o Escopo do MVP.
-2. **IA Engine 3.0:** Geração de prompts especializados (Código, Business, Debug) com contexto completo do projeto.
-3. **Métricas Dinâmicas:** Dashboard que calcula o progresso real baseado nas tarefas concluídas.
-4. **Pitch Deck:** Gerador automático de slides para apresentação do projeto.
-5. **Auto-save:** Sincronização em tempo real com o Supabase para evitar perda de dados.
+1. **Criação Conectada:** Inicie projetos já vinculando GitHub, Vercel e Supabase no nascimento.
+2. **Provisionamento Local:** O Orquestrador web envia comandos para o seu PC criar pastas e rodar `git init` automaticamente.
+3. **IA Engine 3.0:** Geração de prompts especializados com contexto bi-direcional (IA lê e escreve no seu Kanban).
+4. **Métricas de Progresso:** Dashboard em tempo real com saúde do projeto por categorias.
+5. **Auto-Doc:** Exportação do planejamento estratégico para Markdown (.md).
+
+---
+
+## ⚙️ Como Configurar o Ecossistema Local
+
+Para que o Orquestrador consiga criar pastas no seu computador:
+
+1. **Inicie o Agente Local:**
+   ```bash
+   node provision-server.js
+   ```
+2. **Sincronize a Memória da IA:**
+   ```bash
+   node sync-orchestrator.js --sync "Nome do Projeto"
+   ```
 
 ---
 
 ## 📈 Log de Evolução
 
-### v12.1.2 (Atual)
-- **Correção de Crash:** Unificação das chaves de configuração no `app.js` para evitar erro de carregamento online.
-- **Estabilidade:** Adicionado tratamento de erros visual na tela de carregamento.
+### v12.1.3 (Atual)
+- **Criação Conectada:** Novos campos de Infra (Git, Vercel, Supabase) no modal inicial.
+- **Auto-Git:** Provisionamento local agora executa `git init` e configura o remoto automaticamente.
+- **UX Didática:** Adicionado guia de setup e hints de ajuda no modal de criação.
+- **Fix Visual:** Centralização dos cards de projeto e correção de corte no hover.
 
-### v12.1.1
-- **Métricas:** Implementação do Dashboard de progresso por categoria.
-- **Exportação:** Adicionada função para baixar o Blueprint em Markdown (.md).
-- **IA Refinada:** Adicionados modos de prompt específicos (Code, Business, Debug).
-
-### v12.1.0
-- **Base:** Estrutura inicial com Kanban e Blueprint integrado ao Supabase.
+### v12.1.2 
+- **Conectividade:** Unificação das chaves no `app.js` e estabilização do carregamento online.
+- **Ponte IA:** Criado script de sincronização bi-direcional terminal/web.
 
 ---
-
-## 🛠️ Como rodar
-1. **Local:** Abra o `index.html` em qualquer navegador.
-2. **Online:** O projeto está configurado para deploy automático na Vercel via GitHub.
-
----
-*Documentação gerada e atualizada pelo Gemini CLI.*
+*Documentação viva, atualizada pelo Gemini CLI.*
