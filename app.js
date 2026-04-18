@@ -1,4 +1,4 @@
-// Configuração Interna Segura (v12.1.8)
+// Configuração Interna Segura (v13.0.1)
 const CONFIG = {
     SUPABASE_URL: "https://rppctxuvncoqfgjbfczo.supabase.co",
     SUPABASE_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwcGN0eHV2bmNvcWZnamJmY3pvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4NjU3ODQsImV4cCI6MjA5MTQ0MTc4NH0.OAzfJCLB7x3VpmRYBis4bvbseCDrfcVtZ6ZuBAjqIr4"
@@ -26,7 +26,7 @@ function formatTime(seconds) {
 }
 
 async function init() {
-    console.log("🚀 Inicializando Orquestrador...");
+    console.log("🚀 Inicializando Orquestrador v13...");
     try {
         _supabase = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY);
         await loadProjects();
@@ -92,7 +92,7 @@ async function createProject() {
     if (error) return alert('Erro: ' + error.message);
     const newProject = data[0];
     await injectFoundationalTasks(newProject.id);
-    
+
     try {
         await fetch('http://localhost:3000/provision', {
             method: 'POST',
@@ -114,7 +114,8 @@ async function injectFoundationalTasks(projectId) {
         { project_id: projectId, category: 'back', title: '⚙️ 4. Definir Stack & Arquitetura', status: 'todo' },
         { project_id: projectId, category: 'back', title: '💾 5. Modelagem de Dados', status: 'todo' },
         { project_id: projectId, category: 'infra', title: '🏗️ 6. Setup Infra & DevOps', status: 'todo' },
-        { project_id: projectId, category: 'blueprint', title: '🚀 7. Definir Escopo MVP', status: 'todo' }
+        { project_id: projectId, category: 'blueprint', title: '🚀 7. Definir Escopo MVP', status: 'todo' },
+        { project_id: projectId, category: 'design', title: '🧠 8. Engenharia de Experiência', status: 'todo' }
     ];
     await _supabase.from('tasks').insert(epics);
 }
@@ -154,14 +155,14 @@ async function loadRoadmap() {
     allTasks = tasks || [];
     const lists = { todo: document.getElementById('list-todo'), doing: document.getElementById('list-doing'), done: document.getElementById('list-done') };
     Object.values(lists).forEach(l => l.innerHTML = '');
-    
+
     allTasks.forEach(t => {
         const card = document.createElement('div');
         card.className = 'task-card';
         card.draggable = true;
         card.ondragstart = (e) => handleDragStart(e, t.id);
         card.onclick = (e) => { if (e.target.tagName !== 'BUTTON') openTaskDetails(t); };
-        
+
         const subtasks = t.subtasks || [];
         const completed = subtasks.filter(i => i.done).length;
         const total = subtasks.length;
@@ -185,23 +186,18 @@ async function openTaskDetails(task) {
     document.getElementById('det-title').innerText = task.title;
     document.getElementById('det-desc').innerText = task.description || 'Sem descrição.';
 
-    // Inicia Timer Automático
     if (activeTimerInterval) clearInterval(activeTimerInterval);
     activeTaskId = task.id;
     activeTaskSeconds = task.time_spent || 0;
 
     document.getElementById('det-timer-display').innerText = formatTime(activeTaskSeconds);
-    document.getElementById('det-timer-btn').innerText = '⏸️';
-
+    
     activeTimerInterval = setInterval(() => {
         activeTaskSeconds++;
         const display = document.getElementById('det-timer-display');
         if (display) display.innerText = formatTime(activeTaskSeconds);
         const mini = document.querySelector(`.task-card[ondragstart*="${activeTaskId}"] .task-timer-mini`);
-        if (mini) {
-            mini.innerText = '⏱️ ' + formatTime(activeTaskSeconds);
-            mini.classList.add('timer-active');
-        }
+        if (mini) mini.innerText = '⏱️ ' + formatTime(activeTaskSeconds);
     }, 1000);
 
     const { data } = await _supabase.from('subtasks').select('*').eq('task_id', task.id).order('created_at', { ascending: true });
@@ -210,17 +206,16 @@ async function openTaskDetails(task) {
     openModal('task-details');
 }
 
-async function closeModal(type) { 
+async function closeModal(type) {
     if (type === 'task-details' && activeTaskId) {
         clearInterval(activeTimerInterval);
         const finalTime = activeTaskSeconds;
         const taskId = activeTaskId;
-        activeTaskId = null;
-        activeTimerInterval = null;
+        activeTaskId = null; activeTimerInterval = null;
         await _supabase.from('tasks').update({ time_spent: finalTime }).eq('id', taskId);
         await loadRoadmap();
     }
-    document.getElementById(`modal-${type}`).style.display = 'none'; 
+    document.getElementById(`modal-${type}`).style.display = 'none';
 }
 
 function renderChecklist() {
@@ -244,7 +239,10 @@ async function addSubtask() {
     if (!input || !input.value) return;
     await _supabase.from('subtasks').insert([{ task_id: currentTask.id, text: input.value, done: false }]);
     input.value = '';
-    openTaskDetails(currentTask);
+    const { data } = await _supabase.from('subtasks').select('*').eq('task_id', currentTask.id).order('created_at', { ascending: true });
+    currentTask.subtasks = data || [];
+    renderChecklist();
+    loadRoadmap();
 }
 
 async function toggleSubtask(id, currentStatus) {
@@ -252,6 +250,7 @@ async function toggleSubtask(id, currentStatus) {
     const { data } = await _supabase.from('subtasks').select('*').eq('task_id', currentTask.id).order('created_at', { ascending: true });
     currentTask.subtasks = data || [];
     renderChecklist();
+    loadRoadmap();
 }
 
 async function deleteCurrentTask() {
@@ -263,8 +262,7 @@ async function deleteCurrentTask() {
 
 function updateAIContext() {
     if (!currentProject) return;
-    const val = (id) => document.getElementById(id)?.value || '';
-    const contextText = `# PROJETO: ${currentProject.name}\n- STACK: ${val('t-front')} + ${val('t-back')}\n- PROGRESSO: ${allTasks.filter(t=>t.status==='done').length}/${allTasks.length} tarefas.`;
+    const contextText = `# PROJETO: ${currentProject.name}\n- STATUS: ${allTasks.filter(t => t.status === 'done').length}/${allTasks.length} tarefas concluídas.`;
     const codeEl = document.getElementById('sync-code');
     if (codeEl) codeEl.innerText = contextText;
 }
@@ -274,10 +272,11 @@ function renderMetrics() {
     const done = allTasks.filter(t => t.status === 'done').length;
     const total = allTasks.length;
     const percent = total > 0 ? Math.round((done / total) * 100) : 0;
-    
+    const active = allTasks.filter(t => t.status === 'doing').length;
+
     document.getElementById('metric-total-progress').innerText = percent + '%';
     document.getElementById('bar-total-progress').style.width = percent + '%';
-    document.getElementById('metric-active-tasks').innerText = allTasks.filter(t => t.status === 'doing').length;
+    document.getElementById('metric-active-tasks').innerText = active;
 
     const categories = ['blueprint', 'business', 'design', 'front', 'back', 'infra', 'ia'];
     const container = document.getElementById('metrics-categories');
@@ -312,21 +311,15 @@ function switchBP(n) {
     document.querySelectorAll('.bp-nav-item')[n].classList.add('active');
 }
 
-// UX ENGINEERING & ASSETS
 async function handleUXUpload(input) {
     const file = input.files[0];
     if (!file) return;
-    
     const reader = new FileReader();
     reader.onload = async (e) => {
-        const base64 = e.target.result;
-        let currentRefs = [];
-        try {
-            currentRefs = JSON.parse(document.getElementById('f-visual-refs').value || '[]');
-        } catch(e) {}
-        
-        currentRefs.push({ id: Date.now(), data: base64 });
-        document.getElementById('f-visual-refs').value = JSON.stringify(currentRefs);
+        let refs = [];
+        try { refs = JSON.parse(document.getElementById('f-visual-refs').value || '[]'); } catch(e) {}
+        refs.push({ id: Date.now(), data: e.target.result });
+        document.getElementById('f-visual-refs').value = JSON.stringify(refs);
         renderUXGallery();
         saveBlueprint();
     };
@@ -337,10 +330,7 @@ function renderUXGallery() {
     const gallery = document.getElementById('ux-gallery');
     if (!gallery) return;
     let refs = [];
-    try {
-        refs = JSON.parse(document.getElementById('f-visual-refs').value || '[]');
-    } catch(e) {}
-    
+    try { refs = JSON.parse(document.getElementById('f-visual-refs').value || '[]'); } catch(e) {}
     gallery.innerHTML = refs.map(img => `
         <div class="ux-img-container">
             <img src="${img.data}" onclick="window.open('${img.data}')">
@@ -359,26 +349,9 @@ function removeUXImage(id) {
 
 function generateDesignTokens() {
     const get = (id) => document.getElementById(id).value;
-    const css = `
-:root {
-  /* Colors */
-  --primary: ${get('f-color-primary')};
-  --secondary: ${get('f-color-secondary')};
-  --accent: ${get('f-color-accent')};
-  --success: ${get('f-color-success')};
-  --error: ${get('f-color-error')};
-  
-  /* Geometry */
-  --radius: ${get('f-ui-radius') || '8px'};
-  --spacing: ${get('f-ui-spacing') || '8px'};
-  
-  /* Typography */
-  --font-head: '${get('f-font-head') || 'Inter'}', sans-serif;
-  --font-body: '${get('f-font-body') || 'Roboto'}', sans-serif;
-}
-    `.trim();
+    const css = `:root {\n  --primary: ${get('f-color-primary')};\n  --secondary: ${get('f-color-secondary')};\n  --accent: ${get('f-color-accent')};\n  --success: ${get('f-color-success')};\n  --error: ${get('f-color-error')};\n  --radius: ${get('f-ui-radius') || '8px'};\n  --spacing: ${get('f-ui-spacing') || '8px'};\n}`;
     navigator.clipboard.writeText(css);
-    alert('Design Tokens (CSS) copiados para o clipboard!');
+    alert('Tokens Copiados!');
 }
 
 function fillBlueprintFields(p) {
@@ -393,18 +366,23 @@ function fillBlueprintFields(p) {
         'f-font-head': p.font_head, 'f-font-body': p.font_body, 'f-font-scale': p.font_scale,
         'f-journey': p.user_journey, 'f-behavior': p.behavior_rules, 'f-ui-feedback': p.ui_feedback,
         'f-visual-refs': p.visual_refs, 'f-screen-map': p.screen_map,
-        'f-logic-states': p.logic_states, 'f-logic-path': p.logic_path,
-        'f-logic-empty': p.logic_empty, 'f-logic-errors': p.logic_errors,
-        'f-logic-triggers': p.logic_triggers, 'f-logic-anim': p.logic_anim,
+        'f-logic-states': p.logic_states, 'f-logic-path': p.logic_path, 'f-logic-empty': p.logic_empty,
+        'f-logic-errors': p.logic_errors, 'f-logic-triggers': p.logic_triggers, 'f-logic-anim': p.logic_anim,
         'f-logic-sync': p.logic_sync, 'f-logic-roles': p.logic_roles,
-        't-front': p.frontend_stack,
- 't-back': p.tech_backend, 't-style': p.style_stack, 't-auth': p.tech_auth, 't-apis': p.tech_apis,
+        't-front': p.frontend_stack, 't-back': p.tech_backend, 't-style': p.style_stack, 't-auth': p.tech_auth, 't-apis': p.tech_apis,
         'f-schema': p.db_schema, 'f-db-policies': p.db_policies,
         'f-git': p.github_url, 'f-supabase': p.supabase_config, 'f-vercel': p.vercel_url,
         'f-mvp': p.mvp_scope, 'f-roadmap-v2': p.roadmap_v2
     };
     for (let id in f) { const el = document.getElementById(id); if (el) el.value = f[id] || ''; }
     renderUXGallery();
+}
+
+function triggerAutoSave() {
+    const s = document.getElementById('sync-status');
+    if (s) { s.innerText = "⏳ Alterando..."; s.style.color = "var(--amber)"; }
+    clearTimeout(saveTimeout);
+    saveTimeout = setTimeout(saveBlueprint, 1500);
 }
 
 async function saveBlueprint() {
@@ -440,6 +418,14 @@ async function saveBlueprint() {
         ui_feedback: document.getElementById('f-ui-feedback').value,
         visual_refs: document.getElementById('f-visual-refs').value,
         screen_map: document.getElementById('f-screen-map').value,
+        logic_states: document.getElementById('f-logic-states').value,
+        logic_path: document.getElementById('f-logic-path').value,
+        logic_empty: document.getElementById('f-logic-empty').value,
+        logic_errors: document.getElementById('f-logic-errors').value,
+        logic_triggers: document.getElementById('f-logic-triggers').value,
+        logic_anim: document.getElementById('f-logic-anim').value,
+        logic_sync: document.getElementById('f-logic-sync').value,
+        logic_roles: document.getElementById('f-logic-roles').value,
         frontend_stack: document.getElementById('t-front').value,
         tech_backend: document.getElementById('t-back').value,
         style_stack: document.getElementById('t-style').value,
@@ -456,7 +442,6 @@ async function saveBlueprint() {
     try {
         await _supabase.from('projects').update(data).eq('id', currentProject.id);
         if (s) { s.innerText = "✅ Sincronizado"; s.style.color = "var(--green)"; }
-        updateAIContext();
     } catch (e) { if (s) s.innerText = "❌ Erro"; }
 }
 
@@ -469,12 +454,6 @@ function handleDragOver(e) { e.preventDefault(); }
 async function handleDrop(e, targetStatus) {
     const taskId = e.dataTransfer.getData('text/plain');
     await _supabase.from('tasks').update({ status: targetStatus }).eq('id', taskId);
-    loadRoadmap();
-}
-function copySync() { navigator.clipboard.writeText(document.getElementById('sync-code').innerText); alert('Copiado!'); }
-
-document.addEventListener('DOMContentLoaded', init);
-om('tasks').update({ status: targetStatus }).eq('id', taskId);
     loadRoadmap();
 }
 function copySync() { navigator.clipboard.writeText(document.getElementById('sync-code').innerText); alert('Copiado!'); }
