@@ -1,3 +1,9 @@
+// Configuração Interna Segura (v12.1.2)
+const CONFIG = {
+    SUPABASE_URL: "https://rppctxuvncoqfgjbfczo.supabase.co",
+    SUPABASE_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwcGN0eHV2bmNvcWZnamJmY3pvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4NjU3ODQsImV4cCI6MjA5MTQ0MTc4NH0.OAzfJCLB7x3VpmRYBis4bvbseCDrfcVtZ6ZuBAjqIr4"
+};
+
 let _supabase = null;
 let currentProject = null;
 let allTasks = [];
@@ -9,12 +15,7 @@ let currentSlide = 0;
 async function init() {
     console.log("🚀 Inicializando Orquestrador...");
     try {
-        // Verifica se o CONFIG foi carregado
-        if (typeof CONFIG === 'undefined') {
-            throw new Error("Configurações não encontradas (config.js ausente).");
-        }
-
-        // Inicializa Supabase
+        // Inicializa Supabase diretamente do CONFIG interno
         _supabase = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY);
         console.log("✅ Supabase conectado.");
 
