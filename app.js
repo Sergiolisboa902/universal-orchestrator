@@ -1,4 +1,4 @@
-// Configuração Interna Segura (v12.1.5)
+// Configuração Interna Segura (v12.1.7)
 const CONFIG = {
     SUPABASE_URL: "https://rppctxuvncoqfgjbfczo.supabase.co",
     SUPABASE_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwcGN0eHV2bmNvcWZnamJmY3pvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4NjU3ODQsImV4cCI6MjA5MTQ0MTc4NH0.OAzfJCLB7x3VpmRYBis4bvbseCDrfcVtZ6ZuBAjqIr4"
@@ -179,30 +179,6 @@ async function loadRoadmap() {
     updateAIContext();
 }
 
-async function toggleTimerFromModal() {
-    if (!currentTask) return;
-    if (activeTaskId === currentTask.id) {
-        clearInterval(activeTimerInterval);
-        await _supabase.from('tasks').update({ time_spent: activeTaskSeconds }).eq('id', activeTaskId);
-        activeTaskId = null; activeTimerInterval = null;
-        document.getElementById('det-timer-btn').innerText = '▶️';
-    } else {
-        if (activeTaskId) {
-            clearInterval(activeTimerInterval);
-            await _supabase.from('tasks').update({ time_spent: activeTaskSeconds }).eq('id', activeTaskId);
-        }
-        activeTaskId = currentTask.id;
-        activeTaskSeconds = currentTask.time_spent || 0;
-        document.getElementById('det-timer-btn').innerText = '⏸️';
-        activeTimerInterval = setInterval(() => {
-            activeTaskSeconds++;
-            document.getElementById('det-timer-display').innerText = formatTime(activeTaskSeconds);
-            const mini = document.querySelector(`.task-card[ondragstart*="${activeTaskId}"] .task-timer-mini`);
-            if (mini) mini.innerText = '⏱️ ' + formatTime(activeTaskSeconds);
-        }, 1000);
-    }
-}
-
 async function openTaskDetails(task) {
     currentTask = task;
     document.getElementById('det-title').innerText = task.title;
@@ -240,15 +216,15 @@ async function closeModal(type) {
         const taskId = activeTaskId;
         activeTaskId = null;
         activeTimerInterval = null;
-
-        // Salva tempo no banco ao fechar
         await _supabase.from('tasks').update({ time_spent: finalTime }).eq('id', taskId);
-        loadRoadmap(); // Atualiza UI
+        loadRoadmap();
     }
     document.getElementById(`modal-${type}`).style.display = 'none'; 
 }
 
+function renderChecklist() {
     const container = document.getElementById('checklist-container');
+    if (!container) return;
     container.innerHTML = '';
     (currentTask.subtasks || []).forEach(item => {
         const div = document.createElement('div');
@@ -256,11 +232,15 @@ async function closeModal(type) {
         div.innerHTML = `<div class="subtask-text">${item.text}</div><input type="checkbox" ${item.done ? 'checked' : ''} onchange="toggleSubtask('${item.id}', ${item.done})">`;
         container.appendChild(div);
     });
+    const completed = (currentTask.subtasks || []).filter(i => i.done).length;
+    const total = (currentTask.subtasks || []).length;
+    const progressEl = document.getElementById('det-progress');
+    if (progressEl) progressEl.innerText = total > 0 ? Math.round((completed / total) * 100) + '%' : '0%';
 }
 
 async function addSubtask() {
     const input = document.getElementById('new-subtask-name');
-    if (!input.value) return;
+    if (!input || !input.value) return;
     await _supabase.from('subtasks').insert([{ task_id: currentTask.id, text: input.value, done: false }]);
     input.value = '';
     openTaskDetails(currentTask);
@@ -284,14 +264,7 @@ function updateAIContext() {
     if (!currentProject) return;
     const doing = allTasks.filter(t => t.status === 'doing');
     const val = (id) => document.getElementById(id)?.value || '';
-
-    const contextText = `
-# CONTEXTO ESTRATÉGICO: ${currentProject.name}
-- PROBLEMA: ${val('f-desc')} | MISSÃO: ${val('f-goal')}
-- STACK: ${val('t-front')} + ${val('t-back')}
-- PROGRESSO: ${allTasks.filter(t=>t.status==='done').length}/${allTasks.length} tarefas.
-- EM FOCO: ${doing.map(t => `[${t.title}]`).join(', ')}
-`.trim();
+    const contextText = `# PROJETO: ${currentProject.name}\n- STACK: ${val('t-front')} + ${val('t-back')}\n- PROGRESSO: ${allTasks.filter(t=>t.status==='done').length}/${allTasks.length} tarefas.`;
     const codeEl = document.getElementById('sync-code');
     if (codeEl) codeEl.innerText = contextText;
 }
@@ -308,26 +281,19 @@ function renderMetrics() {
 
     const categories = ['blueprint', 'business', 'design', 'front', 'back', 'infra', 'ia'];
     const container = document.getElementById('metrics-categories');
-    container.innerHTML = '';
-
-    categories.forEach(cat => {
-        const catTasks = allTasks.filter(t => t.category === cat);
-        const catDone = catTasks.filter(t => t.status === 'done').length;
-        const catTime = catTasks.reduce((acc, t) => acc + (t.time_spent || 0), 0);
-        const catPercent = catTasks.length > 0 ? Math.round((catDone / catTasks.length) * 100) : 0;
-        
-        const div = document.createElement('div');
-        div.className = 'category-metric';
-        div.innerHTML = `
-            <div style="display:flex; justify-content:space-between; margin-bottom:5px">
-                <span style="text-transform:capitalize; font-weight:600">${cat}</span>
-                <span>${catPercent}%</span>
-            </div>
-            <div class="metric-chart-bar mini" style="margin-bottom:8px"><div style="width: ${catPercent}%"></div></div>
-            <div style="font-size:9px; color:var(--text2); font-family:var(--mono)">⏱️ Total: ${formatTime(catTime)}</div>
-        `;
-        container.appendChild(div);
-    });
+    if (container) {
+        container.innerHTML = '';
+        categories.forEach(cat => {
+            const catTasks = allTasks.filter(t => t.category === cat);
+            const catDone = catTasks.filter(t => t.status === 'done').length;
+            const catTime = catTasks.reduce((acc, t) => acc + (t.time_spent || 0), 0);
+            const catPercent = catTasks.length > 0 ? Math.round((catDone / catTasks.length) * 100) : 0;
+            const div = document.createElement('div');
+            div.className = 'category-metric';
+            div.innerHTML = `<div style="display:flex; justify-content:space-between; margin-bottom:5px"><span style="text-transform:capitalize; font-weight:600">${cat}</span><span>${catPercent}%</span></div><div class="metric-chart-bar mini" style="margin-bottom:8px"><div style="width: ${catPercent}%"></div></div><div style="font-size:9px; color:var(--text2); font-family:var(--mono)">⏱️ Total: ${formatTime(catTime)}</div>`;
+            container.appendChild(div);
+        });
+    }
 }
 
 function switchMainTab(id) {
@@ -347,17 +313,7 @@ function switchBP(n) {
 }
 
 function fillBlueprintFields(p) {
-    const f = {
-        'f-nome': p.name, 'f-desc': p.description, 'f-goal': p.goal, 'f-instructions': p.ai_instructions,
-        'f-bmc-partners': p.bmc_partners, 'f-bmc-activities': p.bmc_activities, 'f-bmc-resources': p.bmc_resources,
-        'f-value': p.value_proposition, 'f-bmc-relationships': p.bmc_relationships, 'f-bmc-channels': p.bmc_channels,
-        'f-bmc-segments': p.bmc_segments, 'f-bmc-costs': p.bmc_costs, 'f-revenue': p.revenue_sources, 'f-metrics': p.metrics_north,
-        'f-branding': p.branding_colors, 'f-screen-map': p.screen_map, 'f-journey': p.user_journey,
-        't-front': p.frontend_stack, 't-back': p.tech_backend, 't-style': p.style_stack, 't-auth': p.tech_auth, 't-apis': p.tech_apis,
-        'f-schema': p.db_schema, 'f-db-policies': p.db_policies,
-        'f-git': p.github_url, 'f-supabase': p.supabase_config, 'f-vercel': p.vercel_url,
-        'f-mvp': p.mvp_scope, 'f-roadmap-v2': p.roadmap_v2
-    };
+    const f = { 'f-nome': p.name, 'f-desc': p.description, 'f-git': p.github_url, 'f-vercel': p.vercel_url };
     for (let id in f) { const el = document.getElementById(id); if (el) el.value = f[id] || ''; }
 }
 
@@ -412,7 +368,6 @@ function openModal(type, targetStatus = 'todo') {
     document.getElementById(`modal-${type}`).style.display = 'flex'; 
     if (type === 'task') document.getElementById('task-status-target').value = targetStatus;
 }
-function closeModal(type) { document.getElementById(`modal-${type}`).style.display = 'none'; }
 function handleDragStart(e, taskId) { e.dataTransfer.setData('text/plain', taskId); }
 function handleDragOver(e) { e.preventDefault(); }
 async function handleDrop(e, targetStatus) {
@@ -420,7 +375,6 @@ async function handleDrop(e, targetStatus) {
     await _supabase.from('tasks').update({ status: targetStatus }).eq('id', taskId);
     loadRoadmap();
 }
-
 function copySync() { navigator.clipboard.writeText(document.getElementById('sync-code').innerText); alert('Copiado!'); }
 
 document.addEventListener('DOMContentLoaded', init);
