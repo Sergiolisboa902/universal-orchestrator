@@ -162,8 +162,18 @@
                             <div class="ux-column">
                                 <div class="ux-card">
                                     <h3>🧠 User Experience & Logic</h3>
-                                    <div class="field"><label>Fluxos e Jornada</label><textarea id="f-journey" style="min-height: 100px;" placeholder="Descreva como o usuário navega e as regras de transição..." oninput="triggerAutoSave()"></textarea></div>
-                                    <div class="field"><label>Component Behavior</label><textarea id="f-behavior" placeholder="Ex: Todos os botões tem feedback de clique. Modais fecham no overlay." oninput="triggerAutoSave()"></textarea></div>
+                                    <div class="field">
+                                        <label>Fluxo de Navegação (States)</label>
+                                        <textarea id="f-journey" style="min-height: 80px;" placeholder="Ex: Splash -> [Tempo 2s] -> Login -> [Auth] -> Home" oninput="triggerAutoSave()"></textarea>
+                                    </div>
+                                    <div class="field">
+                                        <label>Regras de Comportamento (Triggers)</label>
+                                        <textarea id="f-behavior" style="min-height: 80px;" placeholder="Ex: Ao deletar tarefa -> Mostrar Modal de Confirmação -> Disparar Toast de Sucesso" oninput="triggerAutoSave()"></textarea>
+                                    </div>
+                                    <div class="field">
+                                        <label>Feedbacks de Interface</label>
+                                        <textarea id="f-ui-feedback" style="min-height: 60px;" placeholder="Ex: Skeleton screens durante load. Botões desativados em processing." oninput="triggerAutoSave()"></textarea>
+                                    </div>
                                 </div>
 
                                 <div class="ux-card">

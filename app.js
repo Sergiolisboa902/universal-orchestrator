@@ -312,16 +312,94 @@ function switchBP(n) {
     document.querySelectorAll('.bp-nav-item')[n].classList.add('active');
 }
 
-function fillBlueprintFields(p) {
-    const f = { 'f-nome': p.name, 'f-desc': p.description, 'f-git': p.github_url, 'f-vercel': p.vercel_url };
-    for (let id in f) { const el = document.getElementById(id); if (el) el.value = f[id] || ''; }
+// UX ENGINEERING & ASSETS
+async function handleUXUpload(input) {
+    const file = input.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+        const base64 = e.target.result;
+        let currentRefs = [];
+        try {
+            currentRefs = JSON.parse(document.getElementById('f-visual-refs').value || '[]');
+        } catch(e) {}
+        
+        currentRefs.push({ id: Date.now(), data: base64 });
+        document.getElementById('f-visual-refs').value = JSON.stringify(currentRefs);
+        renderUXGallery();
+        saveBlueprint();
+    };
+    reader.readAsDataURL(file);
 }
 
-function triggerAutoSave() {
-    const s = document.getElementById('sync-status');
-    if (s) { s.innerText = "⏳ Alterando..."; s.style.color = "var(--amber)"; }
-    clearTimeout(saveTimeout);
-    saveTimeout = setTimeout(saveBlueprint, 1500);
+function renderUXGallery() {
+    const gallery = document.getElementById('ux-gallery');
+    if (!gallery) return;
+    let refs = [];
+    try {
+        refs = JSON.parse(document.getElementById('f-visual-refs').value || '[]');
+    } catch(e) {}
+    
+    gallery.innerHTML = refs.map(img => `
+        <div class="ux-img-container">
+            <img src="${img.data}" onclick="window.open('${img.data}')">
+            <button class="ux-img-remove" onclick="removeUXImage(${img.id})">&times;</button>
+        </div>
+    `).join('');
+}
+
+function removeUXImage(id) {
+    let refs = JSON.parse(document.getElementById('f-visual-refs').value || '[]');
+    refs = refs.filter(r => r.id !== id);
+    document.getElementById('f-visual-refs').value = JSON.stringify(refs);
+    renderUXGallery();
+    saveBlueprint();
+}
+
+function generateDesignTokens() {
+    const get = (id) => document.getElementById(id).value;
+    const css = `
+:root {
+  /* Colors */
+  --primary: ${get('f-color-primary')};
+  --secondary: ${get('f-color-secondary')};
+  --accent: ${get('f-color-accent')};
+  --success: ${get('f-color-success')};
+  --error: ${get('f-color-error')};
+  
+  /* Geometry */
+  --radius: ${get('f-ui-radius') || '8px'};
+  --spacing: ${get('f-ui-spacing') || '8px'};
+  
+  /* Typography */
+  --font-head: '${get('f-font-head') || 'Inter'}', sans-serif;
+  --font-body: '${get('f-font-body') || 'Roboto'}', sans-serif;
+}
+    `.trim();
+    navigator.clipboard.writeText(css);
+    alert('Design Tokens (CSS) copiados para o clipboard!');
+}
+
+function fillBlueprintFields(p) {
+    const f = {
+        'f-nome': p.name, 'f-desc': p.description, 'f-goal': p.goal, 'f-instructions': p.ai_instructions,
+        'f-bmc-partners': p.bmc_partners, 'f-bmc-activities': p.bmc_activities, 'f-bmc-resources': p.bmc_resources,
+        'f-value': p.value_proposition, 'f-bmc-relationships': p.bmc_relationships, 'f-bmc-channels': p.bmc_channels,
+        'f-bmc-segments': p.bmc_segments, 'f-bmc-costs': p.bmc_costs, 'f-revenue': p.revenue_sources, 'f-metrics': p.metrics_north,
+        'f-color-primary': p.color_primary || '#6d58ff', 'f-color-secondary': p.color_secondary || '#1a1a1e',
+        'f-color-accent': p.color_accent || '#9e8fff', 'f-color-success': p.color_success || '#2ecc71',
+        'f-color-error': p.color_error || '#e74c3c', 'f-ui-radius': p.ui_radius, 'f-ui-spacing': p.ui_spacing,
+        'f-font-head': p.font_head, 'f-font-body': p.font_body, 'f-font-scale': p.font_scale,
+        'f-journey': p.user_journey, 'f-behavior': p.behavior_rules, 'f-ui-feedback': p.ui_feedback,
+        'f-visual-refs': p.visual_refs, 'f-screen-map': p.screen_map,
+        't-front': p.frontend_stack, 't-back': p.tech_backend, 't-style': p.style_stack, 't-auth': p.tech_auth, 't-apis': p.tech_apis,
+        'f-schema': p.db_schema, 'f-db-policies': p.db_policies,
+        'f-git': p.github_url, 'f-supabase': p.supabase_config, 'f-vercel': p.vercel_url,
+        'f-mvp': p.mvp_scope, 'f-roadmap-v2': p.roadmap_v2
+    };
+    for (let id in f) { const el = document.getElementById(id); if (el) el.value = f[id] || ''; }
+    renderUXGallery();
 }
 
 async function saveBlueprint() {
@@ -342,9 +420,21 @@ async function saveBlueprint() {
         bmc_costs: document.getElementById('f-bmc-costs').value,
         revenue_sources: document.getElementById('f-revenue').value,
         metrics_north: document.getElementById('f-metrics').value,
-        branding_colors: document.getElementById('f-branding').value,
-        screen_map: document.getElementById('f-screen-map').value,
+        color_primary: document.getElementById('f-color-primary').value,
+        color_secondary: document.getElementById('f-color-secondary').value,
+        color_accent: document.getElementById('f-color-accent').value,
+        color_success: document.getElementById('f-color-success').value,
+        color_error: document.getElementById('f-color-error').value,
+        ui_radius: document.getElementById('f-ui-radius').value,
+        ui_spacing: document.getElementById('f-ui-spacing').value,
+        font_head: document.getElementById('f-font-head').value,
+        font_body: document.getElementById('f-font-body').value,
+        font_scale: document.getElementById('f-font-scale').value,
         user_journey: document.getElementById('f-journey').value,
+        behavior_rules: document.getElementById('f-behavior').value,
+        ui_feedback: document.getElementById('f-ui-feedback').value,
+        visual_refs: document.getElementById('f-visual-refs').value,
+        screen_map: document.getElementById('f-screen-map').value,
         frontend_stack: document.getElementById('t-front').value,
         tech_backend: document.getElementById('t-back').value,
         style_stack: document.getElementById('t-style').value,
@@ -361,6 +451,7 @@ async function saveBlueprint() {
     try {
         await _supabase.from('projects').update(data).eq('id', currentProject.id);
         if (s) { s.innerText = "✅ Sincronizado"; s.style.color = "var(--green)"; }
+        updateAIContext();
     } catch (e) { if (s) s.innerText = "❌ Erro"; }
 }
 
