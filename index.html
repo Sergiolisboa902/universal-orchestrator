@@ -127,10 +127,50 @@
                         </div>
                     </div>
                     <div class="form-section" id="bp-2">
-                        <h2>🎨 UX & Identidade Visual</h2>
-                        <div class="field"><label>Branding (Cores/Fontes)</label><textarea id="f-branding" oninput="triggerAutoSave()"></textarea></div>
-                        <div class="field"><label>Mapa de Telas</label><textarea id="f-screen-map" oninput="triggerAutoSave()"></textarea></div>
-                        <div class="field"><label>Jornada</label><textarea id="f-journey" oninput="triggerAutoSave()"></textarea></div>
+                        <h2>🎨 UX & Design System</h2>
+                        
+                        <div class="ux-grid">
+                            <!-- PALETA DE CORES -->
+                            <div class="ux-card">
+                                <h3>🎨 Paleta de Cores</h3>
+                                <div class="color-row">
+                                    <div class="field-inline"><label>Primária</label><input type="color" id="f-color-primary" oninput="triggerAutoSave()"></div>
+                                    <div class="field-inline"><label>Secundária</label><input type="color" id="f-color-secondary" oninput="triggerAutoSave()"></div>
+                                    <div class="field-inline"><label>Destaque</label><input type="color" id="f-color-accent" oninput="triggerAutoSave()"></div>
+                                </div>
+                                <div class="field" style="margin-top:1rem;"><label>CSS Variables / HEX</label><textarea id="f-branding" placeholder="Ex: --bg: #000; --text: #fff;" oninput="triggerAutoSave()"></textarea></div>
+                            </div>
+
+                            <!-- TIPOGRAFIA -->
+                            <div class="ux-card">
+                                <h3>🔤 Tipografia & Estilo</h3>
+                                <div class="field"><label>Font Family (Títulos)</label><input type="text" id="f-font-head" placeholder="Ex: 'Inter', sans-serif" oninput="triggerAutoSave()"></div>
+                                <div class="field"><label>Font Family (Corpo)</label><input type="text" id="f-font-body" placeholder="Ex: 'Roboto', sans-serif" oninput="triggerAutoSave()"></div>
+                                <div class="field"><label>Regras de UI (Bordas/Shadows)</label><input type="text" id="f-ui-rules" placeholder="Ex: Border-radius: 8px; Shadow: 0 4px..." oninput="triggerAutoSave()"></div>
+                            </div>
+                        </div>
+
+                        <div class="ux-grid" style="margin-top: 1.5rem;">
+                            <!-- COMPONENTES & JORNADA -->
+                            <div class="ux-card">
+                                <h3>📐 Estrutura & Fluxo</h3>
+                                <div class="field"><label>Mapa de Telas</label><textarea id="f-screen-map" placeholder="Home -> Login -> Dashboard" oninput="triggerAutoSave()"></textarea></div>
+                                <div class="field"><label>Jornada do Usuário</label><textarea id="f-journey" placeholder="Como o usuário resolve o problema?" oninput="triggerAutoSave()"></textarea></div>
+                            </div>
+
+                            <!-- MOODBOARD (GALERIA DE FOTOS) -->
+                            <div class="ux-card">
+                                <h3>🖼️ Moodboard & Referências</h3>
+                                <div class="upload-zone" onclick="document.getElementById('ux-upload').click()">
+                                    <span>📸 Clique para Adicionar Foto de Exemplo</span>
+                                    <input type="file" id="ux-upload" hidden accept="image/*" onchange="handleUXUpload(this)">
+                                </div>
+                                <div id="ux-gallery" class="ux-gallery">
+                                    <!-- Fotos carregadas via JS -->
+                                </div>
+                                <textarea id="f-visual-refs" hidden></textarea> <!-- Armazena as imagens em JSON/Base64 -->
+                            </div>
+                        </div>
                     </div>
                     <div class="form-section" id="bp-3">
                         <h2>⚙️ Stack Técnica</h2>
