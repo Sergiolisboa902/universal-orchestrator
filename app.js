@@ -1,4 +1,4 @@
-// Configuração Interna Segura (v13.0.5)
+// Configuração Interna Segura (v13.0.6)
 const CONFIG = {
     SUPABASE_URL: "https://rppctxuvncoqfgjbfczo.supabase.co",
     SUPABASE_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwcGN0eHV2bmNvcWZnamJmY3pvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4NjU3ODQsImV4cCI6MjA5MTQ0MTc4NH0.OAzfJCLB7x3VpmRYBis4bvbseCDrfcVtZ6ZuBAjqIr4"
@@ -25,7 +25,7 @@ function formatTime(seconds) {
 }
 
 async function init() {
-    console.log("🚀 Orquestrador v13.0.5 Ativo");
+    console.log("🚀 Orquestrador v13.0.6 Ativo");
     try {
         _supabase = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY);
         await loadProjects();
