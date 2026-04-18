@@ -85,31 +85,46 @@ async function deleteProject(event, id) {
 async function createProject() {
     const name = document.getElementById('new-project-name').value;
     const basePath = document.getElementById('new-project-path').value;
+    const gitUrl = document.getElementById('new-project-git').value;
+    const vercelUrl = document.getElementById('new-project-vercel').value;
+    const supabaseConf = document.getElementById('new-project-supabase').value;
+
     if (!name) return alert('Digite o nome');
     
-    // 1. Criar no Supabase
-    const { data, error } = await _supabase.from('projects').insert([{ name, status: 'active' }]).select();
+    // 1. Criar no Supabase com conectividade inicial
+    const projectData = { 
+        name, 
+        status: 'active',
+        github_url: gitUrl,
+        vercel_url: vercelUrl,
+        supabase_config: supabaseConf
+    };
+
+    const { data, error } = await _supabase.from('projects').insert([projectData]).select();
     if (error) return alert('Erro: ' + error.message);
     const newProject = data[0];
     
     // 2. Injetar tarefas base
     await injectFoundationalTasks(newProject.id);
     
-    // 3. Tentar Provisionamento Local
+    // 3. Tentar Provisionamento Local com tudo conectado
     try {
-        console.log("📡 Solicitando provisionamento local...");
+        console.log("📡 Solicitando provisionamento local conectado...");
         const res = await fetch('http://localhost:3000/provision', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ projectName: name, basePath: basePath })
+            body: JSON.stringify({ 
+                projectName: name, 
+                basePath: basePath,
+                gitUrl: gitUrl,
+                vercelUrl: vercelUrl
+            })
         });
         if (res.ok) {
-            console.log("✅ Provisionamento local concluído com sucesso.");
-        } else {
-            console.warn("⚠️ Servidor local não respondeu. Pasta não criada.");
+            console.log("✅ Provisionamento local e conexões concluídas.");
         }
     } catch (e) {
-        console.warn("ℹ️ Provisionamento local pulado (Servidor Offline).");
+        console.warn("ℹ️ Provisionamento local offline.");
     }
 
     closeModal('project');
