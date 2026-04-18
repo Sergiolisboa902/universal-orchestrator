@@ -207,9 +207,25 @@ async function openTaskDetails(task) {
     currentTask = task;
     document.getElementById('det-title').innerText = task.title;
     document.getElementById('det-desc').innerText = task.description || 'Sem descrição.';
-    const isThisActive = activeTaskId === task.id;
-    document.getElementById('det-timer-display').innerText = formatTime(isThisActive ? activeTaskSeconds : (task.time_spent || 0));
-    document.getElementById('det-timer-btn').innerText = isThisActive ? '⏸️' : '▶️';
+
+    // Inicia Timer Automático
+    if (activeTimerInterval) clearInterval(activeTimerInterval);
+    activeTaskId = task.id;
+    activeTaskSeconds = task.time_spent || 0;
+
+    document.getElementById('det-timer-display').innerText = formatTime(activeTaskSeconds);
+    document.getElementById('det-timer-btn').innerText = '⏸️';
+
+    activeTimerInterval = setInterval(() => {
+        activeTaskSeconds++;
+        const display = document.getElementById('det-timer-display');
+        if (display) display.innerText = formatTime(activeTaskSeconds);
+        const mini = document.querySelector(`.task-card[ondragstart*="${activeTaskId}"] .task-timer-mini`);
+        if (mini) {
+            mini.innerText = '⏱️ ' + formatTime(activeTaskSeconds);
+            mini.classList.add('timer-active');
+        }
+    }, 1000);
 
     const { data } = await _supabase.from('subtasks').select('*').eq('task_id', task.id).order('created_at', { ascending: true });
     currentTask.subtasks = data || [];
@@ -217,7 +233,21 @@ async function openTaskDetails(task) {
     openModal('task-details');
 }
 
-function renderChecklist() {
+async function closeModal(type) { 
+    if (type === 'task-details' && activeTaskId) {
+        clearInterval(activeTimerInterval);
+        const finalTime = activeTaskSeconds;
+        const taskId = activeTaskId;
+        activeTaskId = null;
+        activeTimerInterval = null;
+
+        // Salva tempo no banco ao fechar
+        await _supabase.from('tasks').update({ time_spent: finalTime }).eq('id', taskId);
+        loadRoadmap(); // Atualiza UI
+    }
+    document.getElementById(`modal-${type}`).style.display = 'none'; 
+}
+
     const container = document.getElementById('checklist-container');
     container.innerHTML = '';
     (currentTask.subtasks || []).forEach(item => {
