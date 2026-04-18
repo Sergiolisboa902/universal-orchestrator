@@ -1,4 +1,4 @@
-// Configuração Interna Segura (v13.0.1)
+// Configuração Interna Segura (v13.0.2)
 const CONFIG = {
     SUPABASE_URL: "https://rppctxuvncoqfgjbfczo.supabase.co",
     SUPABASE_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwcGN0eHV2bmNvcWZnamJmY3pvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4NjU3ODQsImV4cCI6MjA5MTQ0MTc4NH0.OAzfJCLB7x3VpmRYBis4bvbseCDrfcVtZ6ZuBAjqIr4"
@@ -26,7 +26,7 @@ function formatTime(seconds) {
 }
 
 async function init() {
-    console.log("🚀 Inicializando Orquestrador v13...");
+    console.log("🚀 Inicializando Orquestrador v13.0.2...");
     try {
         _supabase = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY);
         await loadProjects();
@@ -34,7 +34,10 @@ async function init() {
         backToProjects();
     } catch (e) {
         console.error("❌ Erro na inicialização:", e);
-        document.getElementById('loading-overlay').innerHTML = `<div style="text-align:center; padding: 20px;"><h2 style="color:var(--red)">Erro Crítico</h2><p>${e.message}</p></div>`;
+        const overlay = document.getElementById('loading-overlay');
+        if (overlay) {
+            overlay.innerHTML = `<div style="text-align:center; padding: 20px;"><h2 style="color:var(--red)">Erro Crítico</h2><p>${e.message}</p><button class="btn btn-primary" onclick="location.reload()" style="margin-top:20px">Tentar Novamente</button></div>`;
+        }
     }
 }
 
@@ -190,12 +193,13 @@ async function openTaskDetails(task) {
     activeTaskId = task.id;
     activeTaskSeconds = task.time_spent || 0;
 
-    document.getElementById('det-timer-display').innerText = formatTime(activeTaskSeconds);
+    const display = document.getElementById('det-timer-display');
+    if (display) display.innerText = formatTime(activeTaskSeconds);
     
     activeTimerInterval = setInterval(() => {
         activeTaskSeconds++;
-        const display = document.getElementById('det-timer-display');
-        if (display) display.innerText = formatTime(activeTaskSeconds);
+        const d = document.getElementById('det-timer-display');
+        if (d) d.innerText = formatTime(activeTaskSeconds);
         const mini = document.querySelector(`.task-card[ondragstart*="${activeTaskId}"] .task-timer-mini`);
         if (mini) mini.innerText = '⏱️ ' + formatTime(activeTaskSeconds);
     }, 1000);
@@ -262,7 +266,9 @@ async function deleteCurrentTask() {
 
 function updateAIContext() {
     if (!currentProject) return;
-    const contextText = `# PROJETO: ${currentProject.name}\n- STATUS: ${allTasks.filter(t => t.status === 'done').length}/${allTasks.length} tarefas concluídas.`;
+    const doing = allTasks.filter(t => t.status === 'doing');
+    const val = (id) => document.getElementById(id)?.value || '';
+    const contextText = `# PROJETO: ${currentProject.name}\n- STACK: ${val('t-front')} + ${val('t-back')}\n- PROGRESSO: ${allTasks.filter(t => t.status === 'done').length}/${allTasks.length} tarefas.`;
     const codeEl = document.getElementById('sync-code');
     if (codeEl) codeEl.innerText = contextText;
 }
@@ -302,15 +308,18 @@ function switchMainTab(id) {
     document.getElementById('tab-' + id).classList.add('active');
     if (id === 'metrics') renderMetrics();
     if (id === 'sync') updateAIContext();
+    if (id === 'pitch') { currentSlide = 0; renderPitchDeck(); }
 }
 
 function switchBP(n) {
     document.querySelectorAll('.form-section').forEach(s => s.classList.remove('active'));
     document.querySelectorAll('.bp-nav-item').forEach(i => i.classList.remove('active'));
     document.getElementById('bp-' + n).classList.add('active');
-    document.querySelectorAll('.bp-nav-item')[n].classList.add('active');
+    const navItems = document.querySelectorAll('.bp-nav-item');
+    if (navItems[n]) navItems[n].classList.add('active');
 }
 
+// UX ENGINEERING & ASSETS
 async function handleUXUpload(input) {
     const file = input.files[0];
     if (!file) return;
@@ -352,6 +361,32 @@ function generateDesignTokens() {
     const css = `:root {\n  --primary: ${get('f-color-primary')};\n  --secondary: ${get('f-color-secondary')};\n  --accent: ${get('f-color-accent')};\n  --success: ${get('f-color-success')};\n  --error: ${get('f-color-error')};\n  --radius: ${get('f-ui-radius') || '8px'};\n  --spacing: ${get('f-ui-spacing') || '8px'};\n}`;
     navigator.clipboard.writeText(css);
     alert('Tokens Copiados!');
+}
+
+function renderPitchDeck() {
+    const viewer = document.getElementById('slide-viewer');
+    if (!viewer || !currentProject) return;
+    const slides = [
+        `<h1>${currentProject.name}</h1><h2>Missão</h2><p>${currentProject.goal || 'Definindo o futuro.'}</p>`,
+        `<h2>O Problema</h2><p>${currentProject.description || 'Não definido.'}</p>`,
+        `<h2>A Solução</h2><p>${currentProject.value_proposition || 'Não definido.'}</p>`,
+        `<h2>Status</h2><h1>${allTasks.filter(t=>t.status==='done').length}/${allTasks.length}</h1><p>Tarefas concluídas.</p>`
+    ];
+    viewer.innerHTML = slides.map((c, i) => `<div class="slide ${i === currentSlide ? 'active' : ''}">${c}</div>`).join('');
+    document.getElementById('slide-number').innerText = `${currentSlide + 1} / ${slides.length}`;
+}
+function nextSlide() { if (currentSlide < 3) { currentSlide++; renderPitchDeck(); } }
+function prevSlide() { if (currentSlide > 0) { currentSlide--; renderPitchDeck(); } }
+
+function exportBlueprintMarkdown() {
+    if (!currentProject) return;
+    const val = (id) => document.getElementById(id)?.value || '';
+    const md = `# BLUEPRINT: ${currentProject.name}\n\n## FUNDAMENTOS\n- PROBLEMA: ${val('f-desc')}\n- MISSÃO: ${val('f-goal')}`;
+    const blob = new Blob([md], { type: 'text/markdown' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `blueprint-${currentProject.name}.md`;
+    a.click();
 }
 
 function fillBlueprintFields(p) {
@@ -449,6 +484,7 @@ function openModal(type, targetStatus = 'todo') {
     document.getElementById(`modal-${type}`).style.display = 'flex'; 
     if (type === 'task') document.getElementById('task-status-target').value = targetStatus;
 }
+function closeModal(type) { document.getElementById(`modal-${type}`).style.display = 'none'; }
 function handleDragStart(e, taskId) { e.dataTransfer.setData('text/plain', taskId); }
 function handleDragOver(e) { e.preventDefault(); }
 async function handleDrop(e, targetStatus) {
