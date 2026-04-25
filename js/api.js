@@ -82,7 +82,6 @@ async function toggleSubtask(id, currentStatus) {
 async function deleteCurrentTask() {
     if (!confirm('Excluir tarefa?')) return;
     await _supabase.from('tasks').delete().eq('id', currentTask.id);
-    // Usamos a versão global de closeModal aqui, o timer.js lida com os detalhes
     const el = document.getElementById(`modal-task-details`);
     if (el) el.style.display = 'none';
     if (typeof loadRoadmap === 'function') loadRoadmap();
@@ -153,4 +152,41 @@ async function saveBlueprint() {
         await _supabase.from('projects').update(data).eq('id', currentProject.id);
         if (s) { s.innerText = "✅ Sincronizado"; s.style.color = "var(--green)"; }
     } catch (e) { if (s) s.innerText = "❌ Erro"; }
+}
+
+// === NOVAS FUNÇÕES: KNOWLEDGE BASE (OBSIDIAN) ===
+
+async function loadDocs() {
+    if (!currentProject) return;
+    const { data, error } = await _supabase.from('project_docs').select('*').eq('project_id', currentProject.id).order('filename', { ascending: true });
+    if (error) return console.error("Erro loadDocs:", error);
+    allDocs = data || [];
+    if (typeof renderDocList === 'function') renderDocList();
+}
+
+async function saveDoc(filename, content) {
+    if (!currentProject) return;
+    const docData = { project_id: currentProject.id, filename, content, updated_at: new Date() };
+    const { error } = await _supabase.from('project_docs').upsert(docData, { onConflict: 'project_id,filename' });
+    if (error) console.error("Erro saveDoc:", error);
+    syncToObsidian();
+}
+
+async function syncToObsidian() {
+    if (!currentProject) return;
+    const basePath = document.getElementById('new-project-path')?.value || "C:\\Users\\Adm\\Documents\\Projetos\\";
+    try {
+        await fetch('http://localhost:3000/sync-docs', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ projectName: currentProject.name, basePath, docs: allDocs })
+        });
+        console.log("✅ Sincronizado com Obsidian");
+    } catch (e) { console.warn("Servidor local não detectado para sync Obsidian."); }
+}
+
+async function createDoc(filename) {
+    if (!filename) return;
+    await saveDoc(filename, "# " + filename);
+    await loadDocs();
 }

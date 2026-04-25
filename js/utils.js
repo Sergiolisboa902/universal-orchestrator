@@ -46,7 +46,7 @@ function switchMainTab(id) {
     
     // Gatilhos de renderização específica
     if (id === 'metrics') if (typeof renderMetrics === 'function') renderMetrics();
-    if (id === 'sync') if (typeof updateAIContext === 'function') updateAIContext();
+    if (id === 'sync') if (typeof loadDocs === 'function') loadDocs();
     if (id === 'pitch') { 
         currentSlide = 0; 
         if (typeof renderPitchDeck === 'function') renderPitchDeck(); 

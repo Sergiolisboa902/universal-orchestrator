@@ -13,3 +13,8 @@ let currentSlide = 0;
 let activeTimerInterval = null;
 let activeTaskId = null;
 let activeTaskSeconds = 0;
+
+// Variáveis de Documentação (Obsidian/Knowledge Base)
+let allDocs = [];
+let currentDoc = null;
+let docSaveTimeout = null;

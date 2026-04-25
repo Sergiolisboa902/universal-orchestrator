@@ -169,3 +169,51 @@ function renderPitchDeck() {
     const num = document.getElementById('slide-number');
     if (num) num.innerText = `${currentSlide + 1} / ${slides.length}`;
 }
+
+// === DOC MANAGER UI ===
+
+function renderDocList() {
+    const list = document.getElementById('doc-list');
+    if (!list) return;
+    list.innerHTML = '';
+    allDocs.forEach(doc => {
+        const div = document.createElement('div');
+        div.className = `doc-item ${currentDoc?.id === doc.id ? 'active' : ''}`;
+        div.innerText = doc.filename;
+        div.onclick = () => selectDoc(doc);
+        list.appendChild(div);
+    });
+}
+
+function selectDoc(doc) {
+    currentDoc = doc;
+    document.getElementById('active-doc-name').innerText = doc.filename;
+    document.getElementById('doc-editor').value = doc.content || '';
+    renderDocList();
+}
+
+function promptCreateDoc() {
+    const name = prompt("Nome do arquivo (ex: journal.md):");
+    if (name && typeof createDoc === 'function') createDoc(name);
+}
+
+function triggerDocAutoSave() {
+    if (!currentDoc) return;
+    const content = document.getElementById('doc-editor').value;
+    currentDoc.content = content;
+    
+    document.getElementById('sync-status').innerText = "⏳ Alterando Doc...";
+    clearTimeout(docSaveTimeout);
+    docSaveTimeout = setTimeout(() => {
+        if (typeof saveDoc === 'function') {
+            saveDoc(currentDoc.filename, content);
+            document.getElementById('sync-status').innerText = "✅ Sincronizado";
+        }
+    }, 1500);
+}
+
+function copyActiveDoc() {
+    const content = document.getElementById('doc-editor').value;
+    navigator.clipboard.writeText(content);
+    alert("Markdown copiado!");
+}

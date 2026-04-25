@@ -36,7 +36,7 @@
             <button class="tab-btn" id="tab-blueprint" onclick="switchMainTab('blueprint')">Planejamento</button>
             <button class="tab-btn" id="tab-metrics" onclick="switchMainTab('metrics')">Métricas</button>
             <button class="tab-btn" id="tab-pitch" onclick="switchMainTab('pitch')">Pitch Deck</button>
-            <button class="tab-btn" id="tab-sync" onclick="switchMainTab('sync')">IA_Engine</button>
+            <button class="tab-btn" id="tab-sync" onclick="switchMainTab('sync')">Knowledge Base</button>
         </div>
         <div id="sync-status" style="font-size: 11px; font-family: var(--mono); color: var(--green);">✅ SINCRONIZADO</div>
     </header>
@@ -297,26 +297,26 @@
             </div>
         </div>
 
-        <!-- 4. IA ENGINE (SYNC) -->
+        <!-- 4. KNOWLEDGE BASE (OBSIDIAN SYNC) -->
         <div id="page-sync" class="page">
-            <div class="sync-container">
-                <div class="sync-header">
-                    <div style="display: flex; align-items: center; gap: 1rem;">
-                        <h2 style="font-family: var(--mono); color: var(--accent-light); margin: 0;">Motor de Contexto IA</h2>
-                        <select id="prompt-mode" class="prompt-select" onchange="updateAIContext()">
-                            <option value="strategic">Estratégico (Full)</option>
-                            <option value="code">Desenvolvimento (Código)</option>
-                            <option value="business">Business & Pitch</option>
-                            <option value="debug">Debugging & Fix</option>
-                        </select>
+            <div class="knowledge-container">
+                <div class="knowledge-sidebar">
+                    <div style="padding: 1rem; border-bottom: 1px solid var(--border);">
+                        <button class="btn btn-primary" style="width:100%; font-size: 11px;" onclick="promptCreateDoc()">+ Novo Documento .md</button>
                     </div>
-                    <div style="display: flex; gap: 0.5rem;">
-                        <button class="btn btn-secondary" style="font-size: 11px;" onclick="copySync()">Copiar Full</button>
-                        <button class="btn btn-primary" style="font-size: 11px;" onclick="generateSpecificPrompt()">Gerar Prompt Ativo</button>
+                    <div id="doc-list" class="doc-list">
+                        <!-- Lista de .md preenchida via JS -->
                     </div>
                 </div>
-                <div class="sync-content">
-                    <pre id="sync-code">Gerando contexto estratégico...</pre>
+                <div class="knowledge-editor">
+                    <div class="editor-header">
+                        <span id="active-doc-name" style="font-family: var(--mono); color: var(--accent-light);">Selecione um documento</span>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button class="btn btn-secondary" style="font-size: 10px;" onclick="syncToObsidian()">Sync Obsidian</button>
+                            <button class="btn btn-secondary" style="font-size: 10px;" onclick="copyActiveDoc()">Copiar MD</button>
+                        </div>
+                    </div>
+                    <textarea id="doc-editor" class="markdown-editor" placeholder="# Seu conteúdo Markdown aqui..." oninput="triggerDocAutoSave()"></textarea>
                 </div>
             </div>
         </div>
