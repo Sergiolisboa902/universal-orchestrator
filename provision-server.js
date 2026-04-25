@@ -16,7 +16,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 const { execSync } = require('child_process');
 
 app.post('/provision', async (req, res) => {
-    const { projectName, basePath, gitUrl, vercelUrl } = req.body;
+    const { projectName, basePath } = req.body;
     console.log(`🚀 Provisionando Projeto: ${projectName}`);
 
     try {
@@ -29,23 +29,12 @@ app.post('/provision', async (req, res) => {
 
         if (!fs.existsSync(projectPath)) fs.mkdirSync(projectPath, { recursive: true });
 
-        if (gitUrl) {
-            try {
-                if (!fs.existsSync(path.join(projectPath, '.git'))) {
-                    execSync(`git init`, { cwd: projectPath });
-                    execSync(`git remote add origin ${gitUrl}`, { cwd: projectPath });
-                }
-            } catch (e) {}
-        }
-
-        const { data: tasks } = await supabase.from('tasks').select('*, subtasks(*)').eq('project_id', project.id);
-        fs.writeFileSync(path.join(projectPath, '.context-memory.json'), JSON.stringify({ last_sync: new Date(), project, tasks }, null, 2));
-
         // Criar docs/ padrão
         const docsPath = path.join(projectPath, 'docs');
         if (!fs.existsSync(docsPath)) fs.mkdirSync(docsPath, { recursive: true });
+        
         const defaultDocs = [
-            { filename: 'contexto.md', content: `# Contexto do Projeto\n\nResumo: ${project.description || 'Projeto inicializado via Orchestrator.'}` },
+            { filename: 'contexto.md', content: `# Contexto do Projeto\n\nResumo: ${project.description || 'Projeto criado via Orchestrator.'}` },
             { filename: 'arquitetura.md', content: `# Arquitetura\n\n- Padrão: DDD (Domain-Driven Design)\n- Camadas: Domain, Application, Infrastructure` },
             { filename: 'journal.md', content: `# Diário de Bordo\n\n## ${new Date().toLocaleDateString()}\nProjeto criado.` }
         ];
@@ -57,7 +46,7 @@ app.post('/provision', async (req, res) => {
 
 app.post('/sync-docs', async (req, res) => {
     const { projectName, basePath, docs } = req.body;
-    console.log(`📂 Sync Obsidian [${projectName}]: ${docs.length} arquivos.`);
+    console.log(`📂 Criando arquivos locais para [${projectName}]...`);
 
     try {
         const folderName = projectName.toLowerCase().replace(/\s+/g, '-');
@@ -70,14 +59,6 @@ app.post('/sync-docs', async (req, res) => {
             const fileName = doc.filename.endsWith('.md') ? doc.filename : `${doc.filename}.md`;
             fs.writeFileSync(path.join(docsPath, fileName), doc.content);
         });
-
-        // Git Sync
-        try {
-            execSync(`git add docs/`, { cwd: projectPath });
-            execSync(`git commit -m "docs: Update KB via Orchestrator"`, { cwd: projectPath });
-            execSync(`git push origin main`, { cwd: projectPath });
-            console.log("✅ Git pushed com sucesso.");
-        } catch (e) { console.warn("⚠️ Falha ao fazer git push (talvez não haja alterações ou auth necessária)."); }
 
         res.status(200).json({ status: "success", count: docs.length });
     } catch (err) {
