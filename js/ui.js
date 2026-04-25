@@ -83,7 +83,16 @@ function renderChecklist() {
 
 function updateAIContext() {
     if (!currentProject) return;
-    const contextText = `# PROJETO: ${currentProject.name}\n- STATUS: ${allTasks.filter(t => t.status === 'done').length}/${allTasks.length} tarefas concluídas.`;
+    const mode = document.getElementById('prompt-mode')?.value || 'strategic';
+    
+    let contextText = `# PROJETO: ${currentProject.name}\n`;
+    contextText += `- STATUS: ${allTasks.filter(t => t.status === 'done').length}/${allTasks.length} tarefas concluídas.\n`;
+    contextText += `- DOMÍNIO (DDD): ${currentProject.ddd_contexts || 'Não definido'}\n`;
+    contextText += `- LINGUAGEM UBÍQUA: ${currentProject.ddd_language || 'Não definido'}\n`;
+    contextText += `- ENTIDADES: ${currentProject.ddd_entities || 'Não definido'}\n`;
+    contextText += `- EVENTOS: ${currentProject.ddd_events || 'Não definido'}\n\n`;
+    contextText += `## DIRETRIZ MESTRE:\nSempre utilize Domain-Driven Design (DDD). Organize o código em camadas (Domain, Application, Infrastructure). Use Repository Pattern para acesso a dados.\n`;
+
     const codeEl = document.getElementById('sync-code');
     if (codeEl) codeEl.innerText = contextText;
 }
@@ -127,10 +136,11 @@ function fillBlueprintFields(p) {
         'f-color-error': p.color_error || '#e74c3c', 'f-ui-radius': p.ui_radius, 'f-ui-spacing': p.ui_spacing,
         'f-font-head': p.font_head, 'f-font-body': p.font_body, 'f-font-scale': p.font_scale,
         'f-journey': p.user_journey, 'f-behavior': p.behavior_rules, 'f-ui-feedback': p.ui_feedback,
-        'f-visual-refs': p.visual_refs, 'f-screen-map': p.screen_map,
+        'f-screen-map': p.screen_map,
         'f-logic-states': p.logic_states, 'f-logic-path': p.logic_path, 'f-logic-empty': p.logic_empty,
         'f-logic-errors': p.logic_errors, 'f-logic-triggers': p.logic_triggers, 'f-logic-anim': p.logic_anim,
         'f-logic-sync': p.logic_sync, 'f-logic-roles': p.logic_roles,
+        'f-ddd-language': p.ddd_language, 'f-ddd-contexts': p.ddd_contexts, 'f-ddd-events': p.ddd_events, 'f-ddd-entities': p.ddd_entities,
         't-front': p.frontend_stack, 't-back': p.tech_backend, 't-style': p.style_stack, 't-auth': p.tech_auth, 't-apis': p.tech_apis,
         'f-schema': p.db_schema, 'f-db-policies': p.db_policies,
         'f-git': p.github_url, 'f-supabase': p.supabase_config, 'f-vercel': p.vercel_url,

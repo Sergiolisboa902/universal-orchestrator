@@ -42,14 +42,14 @@ function selectProjectById(id) {
 
 async function injectFoundationalTasks(projectId) {
     const epics = [
-        { project_id: projectId, category: 'blueprint', title: '🎯 1. Preencher Fundamentos', status: 'todo' },
-        { project_id: projectId, category: 'business', title: '💼 2. Business Model Canvas', status: 'todo' },
-        { project_id: projectId, category: 'design', title: '🎨 3. UX & Identidade Visual', status: 'todo' },
-        { project_id: projectId, category: 'back', title: '⚙️ 4. Definir Stack & Arquitetura', status: 'todo' },
-        { project_id: projectId, category: 'back', title: '💾 5. Modelagem de Dados', status: 'todo' },
-        { project_id: projectId, category: 'infra', title: '🏗️ 6. Setup Infra & DevOps', status: 'todo' },
-        { project_id: projectId, category: 'blueprint', title: '🚀 7. Definir Escopo MVP', status: 'todo' },
-        { project_id: projectId, category: 'design', title: '🧠 8. Engenharia de Experiência', status: 'todo' }
+        { project_id: projectId, category: 'blueprint', title: '🎯 1. Preencher Fundamentos & Domínios', status: 'todo' },
+        { project_id: projectId, category: 'blueprint', title: '🗣️ 2. Definir Linguagem Ubíqua', status: 'todo' },
+        { project_id: projectId, category: 'blueprint', title: '📦 3. Mapear Bounded Contexts', status: 'todo' },
+        { project_id: projectId, category: 'design', title: '🎨 4. UX & Design System', status: 'todo' },
+        { project_id: projectId, category: 'back', title: '⚙️ 5. Definir Camadas da Arquitetura (DDD)', status: 'todo' },
+        { project_id: projectId, category: 'back', title: '💾 6. Modelagem de Dados & Repositórios', status: 'todo' },
+        { project_id: projectId, category: 'infra', title: '🏗️ 7. Setup Infra & DevOps', status: 'todo' },
+        { project_id: projectId, category: 'blueprint', title: '🚀 8. Escopo MVP', status: 'todo' }
     ];
     await _supabase.from('tasks').insert(epics);
 }

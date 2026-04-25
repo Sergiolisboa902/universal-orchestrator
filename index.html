@@ -102,6 +102,7 @@
                     <div class="bp-nav-item" onclick="switchBP(4)">💾 5. Dados & Segurança</div>
                     <div class="bp-nav-item" onclick="switchBP(5)">🏗️ 6. Infra & Deploy</div>
                     <div class="bp-nav-item" onclick="switchBP(6)">🚀 7. Escopo MVP</div>
+                    <div class="bp-nav-item" onclick="switchBP(7)">🎯 8. Arquitetura DDD</div>
                 </nav>
                 <div class="blueprint-content">
                     <div class="form-section active" id="bp-0">
@@ -214,6 +215,35 @@
                     </div>
 
                     <div class="form-section" id="bp-7">
+                        <div class="ux-header-pro">
+                            <h2>🎯 Arquitetura & Domínio (DDD)</h2>
+                            <span class="agent-badge">Modo Estratégico Ativo</span>
+                        </div>
+                        <div class="ux-main-layout">
+                            <div class="ux-column">
+                                <div class="ux-card">
+                                    <h3>🌐 Linguagem Ubíqua & Termos</h3>
+                                    <div class="field"><label>Dicionário do Domínio</label><textarea id="f-ddd-language" style="min-height: 120px;" placeholder="Ex: Tenant = Assinante da plataforma. Order = Pedido de compra finalizado." oninput="triggerAutoSave()"></textarea></div>
+                                </div>
+                                <div class="ux-card">
+                                    <h3>📦 Bounded Contexts (Fronteiras)</h3>
+                                    <div class="field"><label>Mapeamento de Contextos</label><textarea id="f-ddd-contexts" style="min-height: 120px;" placeholder="Ex: Sales Context, Inventory Context, Billing Context." oninput="triggerAutoSave()"></textarea></div>
+                                </div>
+                            </div>
+                            <div class="ux-column">
+                                <div class="ux-card">
+                                    <h3>⚡ Eventos de Domínio</h3>
+                                    <div class="field"><label>Gatilhos de Negócio</label><textarea id="f-ddd-events" style="min-height: 120px;" placeholder="Ex: When OrderPlaced -> SendEmail -> UpdateInventory." oninput="triggerAutoSave()"></textarea></div>
+                                </div>
+                                <div class="ux-card">
+                                    <h3>🏗️ Entidades & Agregados</h3>
+                                    <div class="field"><label>Objetos Principais</label><textarea id="f-ddd-entities" style="min-height: 120px;" placeholder="Ex: User (Root Aggregate), Product (Entity), Address (Value Object)." oninput="triggerAutoSave()"></textarea></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section" id="bp-8">
                         <div class="ux-header-pro">
                             <h2>🧠 Experience Logic & State Machine</h2>
                             <span class="agent-badge">Modo Engenharia Ativo</span>
