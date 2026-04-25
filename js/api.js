@@ -150,8 +150,39 @@ async function saveBlueprint() {
     
     try {
         await _supabase.from('projects').update(data).eq('id', currentProject.id);
+        
+        // Sincronizar Blueprint como .md
+        const md = generateBlueprintMarkdown(data);
+        await saveDoc('blueprint.md', md);
+        
         if (s) { s.innerText = "✅ Sincronizado"; s.style.color = "var(--green)"; }
     } catch (e) { if (s) s.innerText = "❌ Erro"; }
+}
+
+function generateBlueprintMarkdown(p) {
+    return `# Blueprint: ${p.name || 'Sem nome'}
+
+## 🎯 Fundamentos
+- **Problema:** ${p.description || ''}
+- **Missão:** ${p.goal || ''}
+
+## 💼 Business Model Canvas
+- **Proposta de Valor:** ${p.value_proposition || ''}
+- **Segmentos:** ${p.bmc_segments || ''}
+
+## 🎯 Arquitetura DDD
+- **Linguagem Ubíqua:** ${p.ddd_language || ''}
+- **Bounded Contexts:** ${p.ddd_contexts || ''}
+- **Eventos:** ${p.ddd_events || ''}
+- **Entidades:** ${p.ddd_entities || ''}
+
+## ⚙️ Stack
+- **Frontend:** ${p.frontend_stack || ''}
+- **Backend:** ${p.tech_backend || ''}
+
+## 🚀 Roadmap MVP
+${p.mvp_scope || ''}
+`;
 }
 
 // === NOVAS FUNÇÕES: KNOWLEDGE BASE (OBSIDIAN) ===
