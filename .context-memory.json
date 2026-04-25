@@ -1,5 +1,5 @@
 {
-  "last_sync": "2026-04-18T16:41:12.762Z",
+  "last_sync": "2026-04-25T02:27:49.966Z",
   "project": {
     "id": "48008878-6e8d-4c11-8614-645372885dc4",
     "name": "Universal Orchestrator",
@@ -38,45 +38,6 @@
   },
   "tasks": [
     {
-      "id": "598f777d-22fa-4880-b9ec-49baa9c082c0",
-      "project_id": "48008878-6e8d-4c11-8614-645372885dc4",
-      "title": "Setup Arquitetura Modular",
-      "description": "Separação em index, style e app.",
-      "category": "infra",
-      "priority": "medium",
-      "status": "todo",
-      "assigned_to": "IA",
-      "created_at": "2026-04-13T23:52:19.603351+00:00",
-      "completed_at": null,
-      "subtasks": []
-    },
-    {
-      "id": "b6bdb3a8-10e7-43b3-922a-df78b56c29c6",
-      "project_id": "48008878-6e8d-4c11-8614-645372885dc4",
-      "title": "Integração Supabase",
-      "description": "Persistência de projetos e tarefas.",
-      "category": "back",
-      "priority": "medium",
-      "status": "todo",
-      "assigned_to": "IA",
-      "created_at": "2026-04-13T23:52:19.603351+00:00",
-      "completed_at": null,
-      "subtasks": []
-    },
-    {
-      "id": "0c1fcb4e-a7ce-4888-843c-c3884b86d212",
-      "project_id": "48008878-6e8d-4c11-8614-645372885dc4",
-      "title": "Sistema de Autosave",
-      "description": "Implementação de debounce para salvar inputs.",
-      "category": "front",
-      "priority": "medium",
-      "status": "todo",
-      "assigned_to": "IA",
-      "created_at": "2026-04-13T23:52:19.603351+00:00",
-      "completed_at": null,
-      "subtasks": []
-    },
-    {
       "id": "7b1026ef-877a-4aa9-958f-4fe9bcafb3e3",
       "project_id": "48008878-6e8d-4c11-8614-645372885dc4",
       "title": "Motor de Contexto IA 2.0",
@@ -87,7 +48,86 @@
       "assigned_to": "IA",
       "created_at": "2026-04-13T23:52:19.603351+00:00",
       "completed_at": null,
+      "time_spent": 0,
       "subtasks": []
+    },
+    {
+      "id": "598f777d-22fa-4880-b9ec-49baa9c082c0",
+      "project_id": "48008878-6e8d-4c11-8614-645372885dc4",
+      "title": "Setup Arquitetura Modular",
+      "description": "Separação em index, style e app.",
+      "category": "infra",
+      "priority": "medium",
+      "status": "done",
+      "assigned_to": "IA",
+      "created_at": "2026-04-13T23:52:19.603351+00:00",
+      "completed_at": null,
+      "time_spent": 0,
+      "subtasks": []
+    },
+    {
+      "id": "b6bdb3a8-10e7-43b3-922a-df78b56c29c6",
+      "project_id": "48008878-6e8d-4c11-8614-645372885dc4",
+      "title": "Integração Supabase",
+      "description": "Persistência de projetos e tarefas.",
+      "category": "back",
+      "priority": "medium",
+      "status": "done",
+      "assigned_to": "IA",
+      "created_at": "2026-04-13T23:52:19.603351+00:00",
+      "completed_at": null,
+      "time_spent": 0,
+      "subtasks": []
+    },
+    {
+      "id": "0c1fcb4e-a7ce-4888-843c-c3884b86d212",
+      "project_id": "48008878-6e8d-4c11-8614-645372885dc4",
+      "title": "Sistema de Autosave",
+      "description": "Implementação de debounce para salvar inputs.",
+      "category": "front",
+      "priority": "medium",
+      "status": "done",
+      "assigned_to": "IA",
+      "created_at": "2026-04-13T23:52:19.603351+00:00",
+      "completed_at": null,
+      "time_spent": 0,
+      "subtasks": []
+    },
+    {
+      "id": "163f256a-a394-41a7-a470-ba9025a9d2c5",
+      "project_id": "48008878-6e8d-4c11-8614-645372885dc4",
+      "title": "Pendências",
+      "description": "",
+      "category": "blueprint",
+      "priority": "medium",
+      "status": "todo",
+      "assigned_to": "IA",
+      "created_at": "2026-04-18T18:46:11.350581+00:00",
+      "completed_at": null,
+      "time_spent": 26,
+      "subtasks": [
+        {
+          "id": "9916a5a6-5a3a-4100-84c7-c03616ca95d0",
+          "done": false,
+          "text": "Trocar ordem de metricas e planejamento",
+          "task_id": "163f256a-a394-41a7-a470-ba9025a9d2c5",
+          "created_at": "2026-04-18T18:46:53.396189+00:00"
+        },
+        {
+          "id": "6a42afde-881f-4699-a9ea-e30e6f21243e",
+          "done": false,
+          "text": "Adicionar contador para as tarefas",
+          "task_id": "163f256a-a394-41a7-a470-ba9025a9d2c5",
+          "created_at": "2026-04-18T18:47:05.695535+00:00"
+        },
+        {
+          "id": "26a18ddb-1c20-4c96-bb8b-4dd600ca6cd9",
+          "done": false,
+          "text": "Melhor UX",
+          "task_id": "163f256a-a394-41a7-a470-ba9025a9d2c5",
+          "created_at": "2026-04-18T18:47:10.094196+00:00"
+        }
+      ]
     }
   ]
 }

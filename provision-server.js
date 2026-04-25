@@ -41,6 +41,16 @@ app.post('/provision', async (req, res) => {
         const { data: tasks } = await supabase.from('tasks').select('*, subtasks(*)').eq('project_id', project.id);
         fs.writeFileSync(path.join(projectPath, '.context-memory.json'), JSON.stringify({ last_sync: new Date(), project, tasks }, null, 2));
 
+        // Criar docs/ padrão
+        const docsPath = path.join(projectPath, 'docs');
+        if (!fs.existsSync(docsPath)) fs.mkdirSync(docsPath, { recursive: true });
+        const defaultDocs = [
+            { filename: 'contexto.md', content: `# Contexto do Projeto\n\nResumo: ${project.description || 'Projeto inicializado via Orchestrator.'}` },
+            { filename: 'arquitetura.md', content: `# Arquitetura\n\n- Padrão: DDD (Domain-Driven Design)\n- Camadas: Domain, Application, Infrastructure` },
+            { filename: 'journal.md', content: `# Diário de Bordo\n\n## ${new Date().toLocaleDateString()}\nProjeto criado.` }
+        ];
+        defaultDocs.forEach(doc => fs.writeFileSync(path.join(docsPath, doc.filename), doc.content));
+
         res.status(200).json({ status: "success", path: projectPath });
     } catch (err) { res.status(500).send(err.message); }
 });
@@ -61,12 +71,20 @@ app.post('/sync-docs', async (req, res) => {
             fs.writeFileSync(path.join(docsPath, fileName), doc.content);
         });
 
+        // Git Sync
+        try {
+            execSync(`git add docs/`, { cwd: projectPath });
+            execSync(`git commit -m "docs: Update KB via Orchestrator"`, { cwd: projectPath });
+            execSync(`git push origin main`, { cwd: projectPath });
+            console.log("✅ Git pushed com sucesso.");
+        } catch (e) { console.warn("⚠️ Falha ao fazer git push (talvez não haja alterações ou auth necessária)."); }
+
         res.status(200).json({ status: "success", count: docs.length });
     } catch (err) {
         res.status(500).send(err.message);
     }
 });
 
-app.listen(3000, () => {
+app.listen(3000, '0.0.0.0', () => {
     console.log("🖥️  AGENTE LOCAL ATIVO (Porta 3000)");
 });
