@@ -151,7 +151,7 @@ function fillBlueprintFields(p) {
         'f-journey': p.user_journey, 
         'f-behavior': flow.behavior, 
         'f-ui-feedback': flow.ui_feedback,
-        'f-visual-refs': p.visual_refs,
+        'f-visual-refs': screens.visual_refs,
         
         'f-logic-states': flow.logic_states, 
         'f-logic-path': flow.logic_path, 

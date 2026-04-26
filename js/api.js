@@ -136,9 +136,9 @@ async function saveBlueprint() {
             ddd_language: getVal('f-ddd-language'),
             ddd_contexts: getVal('f-ddd-contexts'),
             ddd_events: getVal('f-ddd-events'),
-            ddd_entities: getVal('f-ddd-entities')
+            ddd_entities: getVal('f-ddd-entities'),
+            visual_refs: getVal('f-visual-refs')
         }),
-        visual_refs: getVal('f-visual-refs'),
         frontend_stack: getVal('t-front'),
         tech_backend: getVal('t-back'),
         style_stack: getVal('t-style'),
