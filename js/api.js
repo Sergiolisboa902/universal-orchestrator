@@ -117,8 +117,6 @@ async function saveBlueprint() {
         font_head: getVal('f-font-head'),
         font_body: getVal('f-font-body'),
         font_scale: getVal('f-font-scale'),
-        journey: getVal('f-journey'),
-        behavior: getVal('f-behavior'),
         ui_feedback: getVal('f-ui-feedback'),
         visual_refs: getVal('f-visual-refs'),
         logic_states: getVal('f-logic-states'),
