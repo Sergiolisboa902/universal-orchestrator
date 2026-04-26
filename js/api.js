@@ -117,8 +117,8 @@ async function saveBlueprint() {
         font_head: getVal('f-font-head'),
         font_body: getVal('f-font-body'),
         font_scale: getVal('f-font-scale'),
-        user_journey: getVal('f-journey'),
-        behavior_rules: getVal('f-behavior'),
+        journey: getVal('f-journey'),
+        behavior: getVal('f-behavior'),
         ui_feedback: getVal('f-ui-feedback'),
         visual_refs: getVal('f-visual-refs'),
         logic_states: getVal('f-logic-states'),
@@ -158,7 +158,10 @@ async function saveBlueprint() {
         if (s) { s.innerText = "✅ Sincronizado"; s.style.color = "var(--green)"; }
     } catch (e) { 
         console.error("Erro saveBlueprint:", e);
-        if (s) { s.innerText = "❌ Erro ao Salvar"; s.style.color = "var(--red)"; }
+        if (s) { 
+            s.innerText = "❌ Erro: " + (e.message || "Falha na conexão"); 
+            s.style.color = "var(--red)"; 
+        }
     }
 }
 

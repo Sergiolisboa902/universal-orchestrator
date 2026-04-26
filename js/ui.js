@@ -135,7 +135,7 @@ function fillBlueprintFields(p) {
         'f-color-accent': p.color_accent || '#9e8fff', 'f-color-success': p.color_success || '#2ecc71',
         'f-color-error': p.color_error || '#e74c3c', 'f-ui-radius': p.ui_radius, 'f-ui-spacing': p.ui_spacing,
         'f-font-head': p.font_head, 'f-font-body': p.font_body, 'f-font-scale': p.font_scale,
-        'f-journey': p.user_journey, 'f-behavior': p.behavior_rules, 'f-ui-feedback': p.ui_feedback,
+        'f-journey': p.journey, 'f-behavior': p.behavior, 'f-ui-feedback': p.ui_feedback,
         'f-visual-refs': p.visual_refs,
         'f-logic-states': p.logic_states, 'f-logic-path': p.logic_path, 'f-logic-empty': p.logic_empty,
         'f-logic-errors': p.logic_errors, 'f-logic-triggers': p.logic_triggers, 'f-logic-anim': p.logic_anim,
