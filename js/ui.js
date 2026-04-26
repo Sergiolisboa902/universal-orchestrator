@@ -187,10 +187,40 @@ function renderUXGallery() {
 function renderPitchDeck() {
     const viewer = document.getElementById('slide-viewer');
     if (!viewer || !currentProject) return;
+
+    let colors = {};
+    try { colors = typeof currentProject.branding_colors === 'string' ? JSON.parse(currentProject.branding_colors) : (currentProject.branding_colors || {}); } catch(e){}
+
+    const doneTasks = allTasks.filter(t => t.status === 'done').length;
+    const totalTasks = allTasks.length;
+
     const slides = [
-        `<h1>${currentProject.name}</h1><h2>Missão</h2><p>${currentProject.goal || 'Foco no futuro.'}</p>`,
-        `<h2>Status</h2><h1>${allTasks.filter(t=>t.status==='done').length}/${allTasks.length}</h1><p>Tarefas concluídas.</p>`
+        // Slide 1: Visão Geral
+        `<h2>PROJETO</h2><h1>${currentProject.name}</h1><p>${currentProject.description || 'Uma nova experiência digital.'}</p>`,
+        
+        // Slide 2: Missão e Valor
+        `<h2>MISSÃO</h2><h1>O Propósito</h1><p>${currentProject.goal || 'Criar valor através de tecnologia e design centrado no usuário.'}</p>`,
+        
+        // Slide 3: Modelo de Negócio
+        `<h2>BUSINESS</h2><h1>Proposta de Valor</h1><p>${currentProject.value_proposition || 'Escalabilidade e eficiência operacional.'}</p>`,
+        
+        // Slide 4: Identidade Visual
+        `<h2>DESIGN SYSTEM</h2><h1>Branding</h1>
+         <div style="display:flex; justify-content:center; gap:10px; margin-top:20px">
+            <div style="width:50px; height:50px; border-radius:10px; background:${colors.primary || '#6d58ff'}"></div>
+            <div style="width:50px; height:50px; border-radius:10px; background:${colors.secondary || '#1a1a1e'}"></div>
+            <div style="width:50px; height:50px; border-radius:10px; background:${colors.accent || '#9e8fff'}"></div>
+         </div>
+         <p style="font-size:1rem; margin-top:15px">${currentProject.font_head || 'Inter'} / ${currentProject.font_body || 'Roboto'}</p>`,
+        
+        // Slide 5: Tecnologia
+        `<h2>TECH STACK</h2><h1>Infraestrutura</h1><p>${currentProject.frontend_stack || 'React'} + ${currentProject.tech_backend || 'Node.js'}</p>
+         <p style="font-size:1rem">Banco: Supabase | Host: Vercel</p>`,
+        
+        // Slide 6: Roadmap e Status
+        `<h2>EXECUÇÃO</h2><h1>Roadmap & Status</h1><h1>${doneTasks} / ${totalTasks}</h1><p>Tarefas concluídas com sucesso.</p>`
     ];
+
     viewer.innerHTML = slides.map((c, i) => `<div class="slide ${i === currentSlide ? 'active' : ''}">${c}</div>`).join('');
     const num = document.getElementById('slide-number');
     if (num) num.innerText = `${currentSlide + 1} / ${slides.length}`;
