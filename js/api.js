@@ -121,7 +121,6 @@ async function saveBlueprint() {
         behavior_rules: getVal('f-behavior'),
         ui_feedback: getVal('f-ui-feedback'),
         visual_refs: getVal('f-visual-refs'),
-        screen_map: getVal('f-screen-map'),
         logic_states: getVal('f-logic-states'),
         logic_path: getVal('f-logic-path'),
         logic_empty: getVal('f-logic-empty'),
@@ -149,14 +148,18 @@ async function saveBlueprint() {
     };
     
     try {
-        await _supabase.from('projects').update(data).eq('id', currentProject.id);
+        const { error } = await _supabase.from('projects').update(data).eq('id', currentProject.id);
+        if (error) throw error;
         
         // Sincronizar Blueprint como .md
         const md = generateBlueprintMarkdown(data);
         await saveDoc('blueprint.md', md);
         
         if (s) { s.innerText = "✅ Sincronizado"; s.style.color = "var(--green)"; }
-    } catch (e) { if (s) s.innerText = "❌ Erro"; }
+    } catch (e) { 
+        console.error("Erro saveBlueprint:", e);
+        if (s) { s.innerText = "❌ Erro ao Salvar"; s.style.color = "var(--red)"; }
+    }
 }
 
 function generateBlueprintMarkdown(p) {
@@ -175,6 +178,11 @@ function generateBlueprintMarkdown(p) {
 - **Bounded Contexts:** ${p.ddd_contexts || ''}
 - **Eventos:** ${p.ddd_events || ''}
 - **Entidades:** ${p.ddd_entities || ''}
+
+## 🧠 Lógica de Experiência
+- **Estados:** ${p.logic_states || ''}
+- **User Path:** ${p.logic_path || ''}
+- **Sincronização:** ${p.logic_sync || ''}
 
 ## ⚙️ Stack
 - **Frontend:** ${p.frontend_stack || ''}

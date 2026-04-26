@@ -59,3 +59,4 @@ Para que o Orquestrador consiga criar pastas no seu computador:
 
 ---
 *Documentação viva, atualizada pelo Gemini CLI.*
+1
