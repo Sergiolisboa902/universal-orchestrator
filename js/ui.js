@@ -188,8 +188,10 @@ function renderPitchDeck() {
     const viewer = document.getElementById('slide-viewer');
     if (!viewer || !currentProject) return;
 
-    let colors = {};
+    let colors = {}, screens = {}, flow = {};
     try { colors = typeof currentProject.branding_colors === 'string' ? JSON.parse(currentProject.branding_colors) : (currentProject.branding_colors || {}); } catch(e){}
+    try { screens = typeof currentProject.screens === 'string' ? JSON.parse(currentProject.screens) : (currentProject.screens || {}); } catch(e){}
+    try { flow = typeof currentProject.user_flow === 'string' ? JSON.parse(currentProject.user_flow) : (currentProject.user_flow || {}); } catch(e){}
 
     const doneTasks = allTasks.filter(t => t.status === 'done').length;
     const totalTasks = allTasks.length;
@@ -198,27 +200,44 @@ function renderPitchDeck() {
         // Slide 1: Visão Geral
         `<h2>PROJETO</h2><h1>${currentProject.name}</h1><p>${currentProject.description || 'Uma nova experiência digital.'}</p>`,
         
-        // Slide 2: Missão e Valor
+        // Slide 2: Missão
         `<h2>MISSÃO</h2><h1>O Propósito</h1><p>${currentProject.goal || 'Criar valor através de tecnologia e design centrado no usuário.'}</p>`,
         
         // Slide 3: Modelo de Negócio
-        `<h2>BUSINESS</h2><h1>Proposta de Valor</h1><p>${currentProject.value_proposition || 'Escalabilidade e eficiência operacional.'}</p>`,
+        `<h2>BUSINESS</h2><h1>Modelo de Negócio</h1><p>${currentProject.value_proposition || 'Escalabilidade e eficiência operacional.'}</p>
+         <p style="font-size:0.9rem; opacity:0.7">Canais: ${currentProject.bmc_channels || 'Não definidos'}</p>`,
         
-        // Slide 4: Identidade Visual
-        `<h2>DESIGN SYSTEM</h2><h1>Branding</h1>
+        // Slide 4: Design System
+        `<h2>DESIGN SYSTEM</h2><h1>Identidade Visual</h1>
          <div style="display:flex; justify-content:center; gap:10px; margin-top:20px">
-            <div style="width:50px; height:50px; border-radius:10px; background:${colors.primary || '#6d58ff'}"></div>
-            <div style="width:50px; height:50px; border-radius:10px; background:${colors.secondary || '#1a1a1e'}"></div>
-            <div style="width:50px; height:50px; border-radius:10px; background:${colors.accent || '#9e8fff'}"></div>
+            <div style="width:40px; height:40px; border-radius:8px; background:${colors.primary || '#6d58ff'}" title="Primary"></div>
+            <div style="width:40px; height:40px; border-radius:8px; background:${colors.secondary || '#1a1a1e'}" title="Secondary"></div>
+            <div style="width:40px; height:40px; border-radius:8px; background:${colors.accent || '#9e8fff'}" title="Accent"></div>
          </div>
-         <p style="font-size:1rem; margin-top:15px">${currentProject.font_head || 'Inter'} / ${currentProject.font_body || 'Roboto'}</p>`,
+         <p style="font-size:1.1rem; margin-top:15px">Tipografia: ${colors.font_head || 'Inter'}</p>`,
         
-        // Slide 5: Tecnologia
-        `<h2>TECH STACK</h2><h1>Infraestrutura</h1><p>${currentProject.frontend_stack || 'React'} + ${currentProject.tech_backend || 'Node.js'}</p>
-         <p style="font-size:1rem">Banco: Supabase | Host: Vercel</p>`,
+        // Slide 5: Stack Técnica
+        `<h2>STACK TÉCNICA</h2><h1>Tecnologias</h1><p>Frontend: ${currentProject.frontend_stack || 'React'}</p>
+         <p>Backend: ${currentProject.tech_backend || 'Node.js'}</p>`,
         
-        // Slide 6: Roadmap e Status
-        `<h2>EXECUÇÃO</h2><h1>Roadmap & Status</h1><h1>${doneTasks} / ${totalTasks}</h1><p>Tarefas concluídas com sucesso.</p>`
+        // Slide 6: Dados & Segurança
+        `<h2>DADOS</h2><h1>Segurança & Schema</h1><p>Banco: Supabase (PostgreSQL)</p>
+         <p style="font-size:0.9rem; opacity:0.8">${currentProject.db_policies ? 'Políticas RLS Ativas' : 'Aguardando Configuração de RLS'}</p>`,
+        
+        // Slide 7: Infra & Deploy
+        `<h2>INFRAESTRUTURA</h2><h1>Cloud & CI/CD</h1><p>Deploy: Vercel</p>
+         <p style="font-size:0.9rem; opacity:0.8">Git: ${currentProject.github_url || 'Repositório Privado'}</p>`,
+        
+        // Slide 8: Escopo MVP
+        `<h2>MVP SCOPE</h2><h1>Fase 1</h1><div style="font-size:1rem; max-height:150px; overflow:hidden">${currentProject.mvp_scope || 'Definição de funcionalidades essenciais.'}</div>`,
+        
+        // Slide 9: Arquitetura DDD
+        `<h2>ARQUITETURA</h2><h1>Domain-Driven Design</h1><p>Domínio: ${screens.ddd_contexts || 'Bounded Contexts'}</p>
+         <p style="font-size:0.9rem; opacity:0.8">Linguagem: ${screens.ddd_language || 'Ubiquitous Language'}</p>`,
+        
+        // Slide 10: Lógica de Experiência
+        `<h2>UX LOGIC</h2><h1>Estados & Fluxos</h1><p>User Path: ${flow.logic_path || 'Fluxo de navegação principal.'}</p>
+         <p style="font-size:1rem; margin-top:10px">Status: ${doneTasks} / ${totalTasks} Tarefas</p>`
     ];
 
     viewer.innerHTML = slides.map((c, i) => `<div class="slide ${i === currentSlide ? 'active' : ''}">${c}</div>`).join('');

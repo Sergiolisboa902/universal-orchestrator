@@ -45,7 +45,7 @@ function generateDesignTokens() {
 }
 
 function nextSlide() { 
-    if (currentSlide < 5) { 
+    if (currentSlide < 9) { 
         currentSlide++; 
         if (typeof renderPitchDeck === 'function') renderPitchDeck(); 
     } 
