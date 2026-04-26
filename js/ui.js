@@ -126,21 +126,47 @@ function renderMetrics() {
 }
 
 function fillBlueprintFields(p) {
+    let colors = {}, screens = {}, flow = {};
+    try { colors = typeof p.branding_colors === 'string' ? JSON.parse(p.branding_colors) : (p.branding_colors || {}); } catch(e){}
+    try { screens = typeof p.screens === 'string' ? JSON.parse(p.screens) : (p.screens || {}); } catch(e){}
+    try { flow = typeof p.user_flow === 'string' ? JSON.parse(p.user_flow) : (p.user_flow || {}); } catch(e){}
+
     const f = {
         'f-nome': p.name, 'f-desc': p.description, 'f-goal': p.goal, 'f-instructions': p.ai_instructions,
         'f-bmc-partners': p.bmc_partners, 'f-bmc-activities': p.bmc_activities, 'f-bmc-resources': p.bmc_resources,
         'f-value': p.value_proposition, 'f-bmc-relationships': p.bmc_relationships, 'f-bmc-channels': p.bmc_channels,
         'f-bmc-segments': p.bmc_segments, 'f-bmc-costs': p.bmc_costs, 'f-revenue': p.revenue_sources, 'f-metrics': p.metrics_north,
-        'f-color-primary': p.color_primary || '#6d58ff', 'f-color-secondary': p.color_secondary || '#1a1a1e',
-        'f-color-accent': p.color_accent || '#9e8fff', 'f-color-success': p.color_success || '#2ecc71',
-        'f-color-error': p.color_error || '#e74c3c', 'f-ui-radius': p.ui_radius, 'f-ui-spacing': p.ui_spacing,
-        'f-font-head': p.font_head, 'f-font-body': p.font_body, 'f-font-scale': p.font_scale,
-        'f-journey': p.journey, 'f-behavior': p.behavior, 'f-ui-feedback': p.ui_feedback,
+        
+        'f-color-primary': colors.primary || '#6d58ff', 
+        'f-color-secondary': colors.secondary || '#1a1a1e',
+        'f-color-accent': colors.accent || '#9e8fff', 
+        'f-color-success': colors.success || '#2ecc71',
+        'f-color-error': colors.error || '#e74c3c', 
+        'f-ui-radius': colors.ui_radius, 
+        'f-ui-spacing': colors.ui_spacing,
+        'f-font-head': colors.font_head, 
+        'f-font-body': colors.font_body, 
+        'f-font-scale': colors.font_scale,
+
+        'f-journey': p.user_journey, 
+        'f-behavior': flow.behavior, 
+        'f-ui-feedback': flow.ui_feedback,
         'f-visual-refs': p.visual_refs,
-        'f-logic-states': p.logic_states, 'f-logic-path': p.logic_path, 'f-logic-empty': p.logic_empty,
-        'f-logic-errors': p.logic_errors, 'f-logic-triggers': p.logic_triggers, 'f-logic-anim': p.logic_anim,
-        'f-logic-sync': p.logic_sync, 'f-logic-roles': p.logic_roles,
-        'f-ddd-language': p.ddd_language, 'f-ddd-contexts': p.ddd_contexts, 'f-ddd-events': p.ddd_events, 'f-ddd-entities': p.ddd_entities,
+        
+        'f-logic-states': flow.logic_states, 
+        'f-logic-path': flow.logic_path, 
+        'f-logic-empty': screens.logic_empty,
+        'f-logic-errors': screens.logic_errors, 
+        'f-logic-triggers': screens.logic_triggers, 
+        'f-logic-anim': screens.logic_anim,
+        'f-logic-sync': flow.logic_sync, 
+        'f-logic-roles': flow.logic_roles,
+
+        'f-ddd-language': screens.ddd_language, 
+        'f-ddd-contexts': screens.ddd_contexts, 
+        'f-ddd-events': screens.ddd_events, 
+        'f-ddd-entities': screens.ddd_entities,
+
         't-front': p.frontend_stack, 't-back': p.tech_backend, 't-style': p.style_stack, 't-auth': p.tech_auth, 't-apis': p.tech_apis,
         'f-schema': p.db_schema, 'f-db-policies': p.db_policies,
         'f-git': p.github_url, 'f-supabase': p.supabase_config, 'f-vercel': p.vercel_url,
